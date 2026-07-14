@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\Casework\Facades;
 
 use Illuminate\Support\Facades\Facade;
@@ -7,7 +9,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @see \Syriable\Casework\Casework
  */
-class Casework extends Facade
+final class Casework extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

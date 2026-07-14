@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Eloquent\Model;
+use Syriable\Casework\Contracts\Notifier;
+use Syriable\Casework\Exceptions\InvalidConfiguration;
+use Syriable\Casework\Reporting\Models\Reason;
+use Syriable\Casework\Support\ConfigurationValidator;
+
+/**
+ * Boot validation of every config key (FR-951/952, ADR-0016).
+ *
+ * @see docs/configuration.md
+ */
+function validConfig(): array
+{
+    /** @var array<string, mixed> */
+    return require __DIR__.'/../../config/casework.php';
+}
+
+function validateConfigWith(array $overrides): void
+{
+    $config = array_replace_recursive(validConfig(), $overrides);
+
+    (new ConfigurationValidator)->validate($config);
+}
+
+it('accepts the shipped defaults', function (): void {
+    (new ConfigurationValidator)->validate(validConfig());
+})->throwsNoExceptions();
+
+it('rejects invalid values with the offending key', function (array $overrides, string $key): void {
+    try {
+        validateConfigWith($overrides);
+    } catch (InvalidConfiguration $exception) {
+        expect($exception->key)->toBe($key);
+
+        return;
+    }
+
+    $this->fail("Expected InvalidConfiguration for [{$key}]");
+})->with([
+    'non-string prefix' => [['table_prefix' => 42], 'table_prefix'],
+    'malformed prefix' => [['table_prefix' => 'bad-prefix!'], 'table_prefix'],
+    'unknown model class' => [['models' => ['report' => 'App\\Missing\\Report']], 'models.report'],
+    'model not subclassing default' => [['models' => ['reason' => Model::class]], 'models.reason'],
+    'non-bool duplicates' => [['reporting' => ['allow_duplicates' => 'no']], 'reporting.allow_duplicates'],
+    'non-bool anonymous' => [['reporting' => ['allow_anonymous' => 1]], 'reporting.allow_anonymous'],
+    'unknown strategy' => [['cases' => ['strategy' => 'sometimes']], 'cases.strategy'],
+    'missing strategy class' => [['cases' => ['strategy' => 'App\\Missing\\Strategy']], 'cases.strategy'],
+    'zero threshold' => [['cases' => ['threshold' => 0]], 'cases.threshold'],
+    'empty priorities' => [['cases' => ['priorities' => []]], 'cases.priorities'],
+    'duplicate priorities' => [['cases' => ['priorities' => ['low', 'low']]], 'cases.priorities'],
+    'default priority not in list' => [['cases' => ['default_priority' => 'critical']], 'cases.default_priority'],
+    'outcome colliding with shipped' => [['decisions' => ['outcomes' => ['uphold']]], 'decisions.outcomes'],
+    'non-string outcome' => [['decisions' => ['outcomes' => [1]]], 'decisions.outcomes'],
+    'restriction type colliding' => [['enforcement' => ['restriction_types' => ['suspension']]], 'enforcement.restriction_types'],
+    'zero appeal limit' => [['appeals' => ['limit_per_target' => 0]], 'appeals.limit_per_target'],
+    'negative appeal window' => [['appeals' => ['window_days' => -1]], 'appeals.window_days'],
+    'non-bool independence' => [['appeals' => ['require_independent_reviewer' => 'yes']], 'appeals.require_independent_reviewer'],
+    'non-bool self-moderation' => [['authorization' => ['prevent_self_moderation' => null]], 'authorization.prevent_self_moderation'],
+    'missing notifier class' => [['notifiers' => ['App\\Missing\\Notifier']], 'notifiers'],
+    'non-notifier class' => [['notifiers' => [Model::class]], 'notifiers'],
+    'missing intake stage' => [['pipelines' => ['intake' => ['App\\Missing\\Stage']]], 'pipelines.intake'],
+    'missing triage stage' => [['pipelines' => ['triage' => ['App\\Missing\\Stage']]], 'pipelines.triage'],
+    'zero prune days' => [['audit' => ['prune_after_days' => 0]], 'audit.prune_after_days'],
+]);
+
+it('accepts a model override that subclasses the shipped model', function (): void {
+    $subclass = new class extends Reason {};
+
+    validateConfigWith(['models' => ['reason' => $subclass::class]]);
+})->throwsNoExceptions();
+
+it('accepts a valid notifier implementation', function (): void {
+    $notifier = new class implements Notifier
+    {
+        public function notify(object $event): void {}
+    };
+
+    validateConfigWith(['notifiers' => [$notifier::class]]);
+})->throwsNoExceptions();
+
+it('accepts a null appeal window and custom open-set values', function (): void {
+    validateConfigWith([
+        'appeals' => ['window_days' => null],
+        'decisions' => ['outcomes' => ['uphold_with_education']],
+        'enforcement' => ['restriction_types' => ['shadowban']],
+    ]);
+})->throwsNoExceptions();

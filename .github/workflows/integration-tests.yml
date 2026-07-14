@@ -1,0 +1,84 @@
+name: integration-tests
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - '.github/workflows/integration-tests.yml'
+      - 'composer.json'
+  pull_request:
+    paths:
+      - '**.php'
+      - '.github/workflows/integration-tests.yml'
+      - 'composer.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [mysql, pgsql, mariadb]
+
+    name: DB ${{ matrix.database }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: casework_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ppassword"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+      pgsql:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: casework_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_DATABASE: casework_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Run feature suite against ${{ matrix.database }}
+        run: vendor/bin/pest --ci
+        env:
+          DB_CONNECTION: ${{ matrix.database }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: ${{ matrix.database == 'pgsql' && 5432 || (matrix.database == 'mariadb' && 3307 || 3306) }}
+          DB_DATABASE: casework_test
+          DB_USERNAME: ${{ matrix.database == 'pgsql' && 'postgres' || 'root' }}
+          DB_PASSWORD: password
