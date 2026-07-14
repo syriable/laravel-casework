@@ -1,17 +1,17 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "syriable/laravel-casework",
+    "description": "This is my package laravel-casework",
     "keywords": [
-        ":vendor_name",
+        "syriable",
         "laravel",
-        ":package_slug"
+        "laravel-casework"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/syriable/laravel-casework",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "syriable",
+            "email": "info@syriable.com",
             "role": "Developer"
         }
     ],
@@ -21,27 +21,33 @@
         "illuminate/contracts": "^11.0||^12.0||^13.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.14",
-        "nunomaduro/collision": "^8.8",
-        "larastan/larastan": "^3.0",
-        "orchestra/testbench": "^11.0.0||^10.0.0||^9.0.0",
-        "pestphp/pest": "^4.0",
-        "pestphp/pest-plugin-arch": "^4.0",
-        "pestphp/pest-plugin-laravel": "^4.0",
+        "barryvdh/laravel-debugbar": "^4.2",
+        "fakerphp/faker": "^1.24.1",
+        "larastan/larastan": "^3.9.6",
+        "laravel/boost": "^2.4",
+        "laravel/pao": "^1.0.6",
+        "laravel/pint": "dev-feat/blade-support",
+        "laravel/sail": "^1.58.0",
+        "mockery/mockery": "^1.6.12",
+        "nunomaduro/collision": "^8.9.4",
+        "orchestra/testbench": "^10.0||^11.0",
+        "pestphp/pest": "^4.7.0",
+        "pestphp/pest-plugin-laravel": "^4.1.0",
+        "pestphp/pest-plugin-type-coverage": "^4.0.4",
         "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-phpunit": "^2.0",
-        "spatie/laravel-ray": "^1.35"
+        "rector/rector": "^2.4.2"
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "Syriable\\Casework\\": "src/",
+            "Syriable\\Casework\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
+            "Syriable\\Casework\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -63,10 +69,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Syriable\\Casework\\CaseworkServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Casework": "Syriable\\Casework\\Facades\\Casework"
             }
         }
     },

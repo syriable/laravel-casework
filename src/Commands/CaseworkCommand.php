@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Syriable\Casework\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class CaseworkCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-casework';
 
     public $description = 'My command';
 
