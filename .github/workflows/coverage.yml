@@ -1,0 +1,43 @@
+name: coverage
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - '.github/workflows/coverage.yml'
+      - 'composer.json'
+  pull_request:
+    paths:
+      - '**.php'
+      - '.github/workflows/coverage.yml'
+      - 'composer.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pdo, pdo_sqlite
+          coverage: pcov
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      # Quality gates per docs/testing-strategy.md §4.
+      - name: Line coverage (>= 90%)
+        run: vendor/bin/pest --ci --coverage --min=90
+
+      - name: Type coverage (>= 95%)
+        run: vendor/bin/pest --type-coverage --min=95

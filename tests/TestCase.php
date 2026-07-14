@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\Casework\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,12 +28,8 @@ class TestCase extends Orchestra
 
     public function getEnvironmentSetUp($app)
     {
-        config()->set('database.default', 'testing');
-
-        /*
-         foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/../database/migrations') as $migration) {
-            (include $migration->getRealPath())->up();
-         }
-         */
+        // The integration workflow overrides DB_CONNECTION to run the same
+        // suite against MySQL / PostgreSQL / MariaDB (testing strategy §5).
+        config()->set('database.default', env('DB_CONNECTION', 'testing'));
     }
 }

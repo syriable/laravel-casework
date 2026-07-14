@@ -2,9 +2,9 @@ includes:
     - phpstan-baseline.neon
 
 parameters:
-    level: 5
+    level: 9
+    # database/ returns in milestone M2 (migrations + factories).
     paths:
         - src
         - config
-        - database
     tmpDir: build/phpstan
