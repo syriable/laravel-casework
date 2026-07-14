@@ -8,6 +8,7 @@ use Syriable\Casework\Contracts\Notifier;
 use Syriable\Casework\Exceptions\InvalidConfiguration;
 use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Support\ConfigurationValidator;
+use Syriable\Casework\Support\ModelRegistry;
 
 /**
  * Boot validation of every config key (FR-951/952, ADR-0016).
@@ -71,7 +72,44 @@ it('rejects invalid values with the offending key', function (array $overrides, 
     'missing intake stage' => [['pipelines.intake' => ['App\\Missing\\Stage']], 'pipelines.intake'],
     'missing triage stage' => [['pipelines.triage' => ['App\\Missing\\Stage']], 'pipelines.triage'],
     'zero prune days' => [['audit.prune_after_days' => 0], 'audit.prune_after_days'],
+    'non-array models' => [['models' => 'nope'], 'models'],
+    'empty model class' => [['models.report' => ''], 'models.report'],
+    'non-string notifier entry' => [['notifiers' => [42]], 'notifiers'],
+    'non-list notifiers' => [['notifiers' => 'nope'], 'notifiers'],
+    'non-list pipeline' => [['pipelines.intake' => 'nope'], 'pipelines.intake'],
+    'non-string pipeline entry' => [['pipelines.triage' => [42]], 'pipelines.triage'],
 ]);
+
+it('rejects a missing model key', function (): void {
+    $config = validConfig();
+    unset($config['models']['warning']);
+
+    try {
+        (new ConfigurationValidator)->validate($config);
+    } catch (InvalidConfiguration $exception) {
+        expect($exception->key)->toBe('models.warning');
+
+        return;
+    }
+
+    $this->fail('Expected InvalidConfiguration for [models.warning]');
+});
+
+it('rejects an unknown model key', function (): void {
+    try {
+        validateConfigWith(['models.banhammer' => Model::class]);
+    } catch (InvalidConfiguration $exception) {
+        expect($exception->key)->toBe('models.banhammer');
+
+        return;
+    }
+
+    $this->fail('Expected InvalidConfiguration for [models.banhammer]');
+});
+
+it('rejects an unknown registry key', function (): void {
+    ModelRegistry::default('banhammer');
+})->throws(InvalidConfiguration::class);
 
 it('accepts a model override that subclasses the shipped model', function (): void {
     $subclass = new class extends Reason {};

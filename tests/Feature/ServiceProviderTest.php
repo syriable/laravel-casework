@@ -36,11 +36,32 @@ it('resolves model classes through the registry', function (): void {
     expect(ModelRegistry::classFor('report'))->toBe('App\\Custom\\Report');
 });
 
-it('applies the configured table prefix to package models', function (): void {
-    expect((new Report)->getTable())->toBe('casework_reports')
-        ->and((new CaseFile)->getTable())->toBe('casework_cases');
+it('applies the configured table prefix to every package model', function (): void {
+    // Phase 6 schema table names, resolved through the registry.
+    $expected = [
+        'report' => 'reports',
+        'reason' => 'reasons',
+        'case' => 'cases',
+        'note' => 'case_notes',
+        'evidence' => 'case_evidence',
+        'decision' => 'decisions',
+        'restriction' => 'restrictions',
+        'warning' => 'warnings',
+        'appeal' => 'appeals',
+        'audit_entry' => 'audit_entries',
+    ];
+
+    expect(ModelRegistry::keys())->toBe(array_keys($expected));
+
+    foreach ($expected as $key => $suffix) {
+        $class = ModelRegistry::classFor($key);
+
+        expect((new $class)->getTable())->toBe('casework_'.$suffix);
+    }
 
     config()->set('casework.table_prefix', 'ts_');
 
-    expect((new AuditEntry)->getTable())->toBe('ts_audit_entries');
+    expect((new AuditEntry)->getTable())->toBe('ts_audit_entries')
+        ->and((new Report)->getTable())->toBe('ts_reports')
+        ->and((new CaseFile)->getTable())->toBe('ts_cases');
 });
