@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Syriable\Casework\Audit\Models\AuditEntry;
+use Syriable\Casework\Cases\Models\CaseFile;
 use Syriable\Casework\Contracts\ScopeResolver;
+use Syriable\Casework\Reporting\Models\Report;
 use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\NullScopeResolver;
 use Workbench\App\Models\Post;
@@ -26,7 +29,7 @@ it('binds ScopeResolver to the null resolver as a singleton', function (): void 
 
 it('resolves model classes through the registry', function (): void {
     expect(ModelRegistry::classFor('report'))
-        ->toBe(\Syriable\Casework\Reporting\Models\Report::class);
+        ->toBe(Report::class);
 
     config()->set('casework.models.report', 'App\\Custom\\Report');
 
@@ -34,10 +37,10 @@ it('resolves model classes through the registry', function (): void {
 });
 
 it('applies the configured table prefix to package models', function (): void {
-    expect((new \Syriable\Casework\Reporting\Models\Report)->getTable())->toBe('casework_reports')
-        ->and((new \Syriable\Casework\Cases\Models\CaseFile)->getTable())->toBe('casework_cases');
+    expect((new Report)->getTable())->toBe('casework_reports')
+        ->and((new CaseFile)->getTable())->toBe('casework_cases');
 
     config()->set('casework.table_prefix', 'ts_');
 
-    expect((new \Syriable\Casework\Audit\Models\AuditEntry)->getTable())->toBe('ts_audit_entries');
+    expect((new AuditEntry)->getTable())->toBe('ts_audit_entries');
 });

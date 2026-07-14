@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Event;
 
 arch('it will not use debugging functions')
     ->expect(['dd', 'dump', 'ray'])
@@ -31,14 +33,14 @@ arch('exceptions are final')
 arch('models are open for extension')
     ->expect('Syriable\Casework')
     ->classes()
-    ->extending(\Illuminate\Database\Eloquent\Model::class)
+    ->extending(Model::class)
     ->not->toBeFinal();
 
 // ADR-0004 layering: models never dispatch events or touch the container.
 arch('models stay side-effect-free')
     ->expect('Syriable\Casework\*\Models')
     ->not->toUse([
-        \Illuminate\Support\Facades\Event::class,
+        Event::class,
         'event',
         'dispatch',
         'app',

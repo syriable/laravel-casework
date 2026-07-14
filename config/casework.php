@@ -1,6 +1,16 @@
 <?php
 
 declare(strict_types=1);
+use Syriable\Casework\Appeals\Models\Appeal;
+use Syriable\Casework\Audit\Models\AuditEntry;
+use Syriable\Casework\Cases\Models\CaseFile;
+use Syriable\Casework\Cases\Models\Decision;
+use Syriable\Casework\Cases\Models\Evidence;
+use Syriable\Casework\Cases\Models\Note;
+use Syriable\Casework\Enforcement\Models\Restriction;
+use Syriable\Casework\Enforcement\Models\Warning;
+use Syriable\Casework\Reporting\Models\Reason;
+use Syriable\Casework\Reporting\Models\Report;
 
 // Laravel Trust & Safety configuration. Every key is boot-validated:
 // invalid values throw Syriable\Casework\Exceptions\InvalidConfiguration
@@ -18,16 +28,16 @@ return [
      * model. All package relations resolve through this map.
      */
     'models' => [
-        'report' => \Syriable\Casework\Reporting\Models\Report::class,
-        'reason' => \Syriable\Casework\Reporting\Models\Reason::class,
-        'case' => \Syriable\Casework\Cases\Models\CaseFile::class,
-        'note' => \Syriable\Casework\Cases\Models\Note::class,
-        'evidence' => \Syriable\Casework\Cases\Models\Evidence::class,
-        'decision' => \Syriable\Casework\Cases\Models\Decision::class,
-        'restriction' => \Syriable\Casework\Enforcement\Models\Restriction::class,
-        'warning' => \Syriable\Casework\Enforcement\Models\Warning::class,
-        'appeal' => \Syriable\Casework\Appeals\Models\Appeal::class,
-        'audit_entry' => \Syriable\Casework\Audit\Models\AuditEntry::class,
+        'report' => Report::class,
+        'reason' => Reason::class,
+        'case' => CaseFile::class,
+        'note' => Note::class,
+        'evidence' => Evidence::class,
+        'decision' => Decision::class,
+        'restriction' => Restriction::class,
+        'warning' => Warning::class,
+        'appeal' => Appeal::class,
+        'audit_entry' => AuditEntry::class,
     ],
 
     'reporting' => [
