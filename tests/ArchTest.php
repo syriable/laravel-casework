@@ -1,8 +1,16 @@
 <?php
 
 declare(strict_types=1);
-use Illuminate\Database\Eloquent\Model;
+
 use Illuminate\Support\Facades\Event;
+
+$modelNamespaces = [
+    'Syriable\Casework\Reporting\Models',
+    'Syriable\Casework\Cases\Models',
+    'Syriable\Casework\Enforcement\Models',
+    'Syriable\Casework\Appeals\Models',
+    'Syriable\Casework\Audit\Models',
+];
 
 arch('it will not use debugging functions')
     ->expect(['dd', 'dump', 'ray'])
@@ -20,25 +28,31 @@ arch('contracts are interfaces')
 // ADR-0017: value objects and support services are final.
 arch('support classes are final')
     ->expect('Syriable\Casework\Support')
-    ->classes()
-    ->toBeFinal();
+    ->toBeFinal()
+    ->ignoring([
+        'Syriable\Casework\Support\Concerns',
+        // Enums are implicitly final; the source parser cannot see it.
+        'Syriable\Casework\Support\Origin',
+    ]);
 
-// ADR-0017: exceptions are final (catch surfaces are interfaces/classes).
+arch('origin is a string-backed enum')
+    ->expect('Syriable\Casework\Support\Origin')
+    ->toBeStringBackedEnums();
+
+// ADR-0017: exceptions are final; the catch surface is the marker interface.
 arch('exceptions are final')
     ->expect('Syriable\Casework\Exceptions')
-    ->classes()
-    ->toBeFinal();
+    ->toBeFinal()
+    ->ignoring('Syriable\Casework\Exceptions\CaseworkException');
 
 // ADR-0017: Eloquent models are designed for subclassing (X1).
 arch('models are open for extension')
-    ->expect('Syriable\Casework')
-    ->classes()
-    ->extending(Model::class)
+    ->expect($modelNamespaces)
     ->not->toBeFinal();
 
 // ADR-0004 layering: models never dispatch events or touch the container.
 arch('models stay side-effect-free')
-    ->expect('Syriable\Casework\*\Models')
+    ->expect($modelNamespaces)
     ->not->toUse([
         Event::class,
         'event',
@@ -46,3 +60,12 @@ arch('models stay side-effect-free')
         'app',
         'resolve',
     ]);
+
+// Integration edge stays final (ADR-0017).
+arch('the service provider and facade are final')
+    ->expect([
+        'Syriable\Casework\CaseworkServiceProvider',
+        'Syriable\Casework\Casework',
+        'Syriable\Casework\Facades\Casework',
+    ])
+    ->toBeFinal();

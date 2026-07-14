@@ -47,7 +47,12 @@ final class ModelRegistry
 
         $configured = config("casework.models.{$key}", $default);
 
-        return is_string($configured) && $configured !== '' ? $configured : $default;
+        if (! is_string($configured) || $configured === '') {
+            return $default;
+        }
+
+        /** @var class-string $configured Boot validation guarantees existence for overrides. */
+        return $configured;
     }
 
     /**
