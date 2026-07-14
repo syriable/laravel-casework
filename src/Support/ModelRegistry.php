@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Syriable\Casework\Support;
 
+use Illuminate\Database\Eloquent\Model;
 use Syriable\Casework\Appeals\Models\Appeal;
 use Syriable\Casework\Audit\Models\AuditEntry;
 use Syriable\Casework\Cases\Models\CaseFile;
@@ -39,7 +40,7 @@ final class ModelRegistry
     /**
      * The configured model class for a registry key.
      *
-     * @return class-string
+     * @return class-string<Model>
      */
     public static function classFor(string $key): string
     {
@@ -51,14 +52,14 @@ final class ModelRegistry
             return $default;
         }
 
-        /** @var class-string $configured Boot validation guarantees existence for overrides. */
+        /** @var class-string<Model> $configured Boot validation guarantees a subclass for overrides. */
         return $configured;
     }
 
     /**
      * The shipped default class for a registry key.
      *
-     * @return class-string
+     * @return class-string<Model>
      */
     public static function default(string $key): string
     {
