@@ -2,19 +2,9 @@
 
 All notable changes to `laravel-casework` will be documented in this file.
 
-## Unreleased (1.0.0)
+## 1.0.0 - 2026-07-15
 
 Initial release: the complete, UI-agnostic trust & safety platform.
-
-Phase 15 internal review (see `docs/reviews/phase-15-internal-review.md`):
-
-- Workflow transitions now use an optimistic compare-and-swap on the
-  state column, so a losing concurrent transition is rejected with
-  `InvalidTransition` instead of double-applying (R-01)
-- `casework:expire-restrictions` processes due rows in bounded batches,
-  keeping memory flat on large backlogs (R-02)
-
-Core capabilities:
 
 - Reporting: fluent report builder, reasons-as-data, duplicate guard
   (I-02), anonymous/system origins, configurable case strategies
@@ -43,5 +33,8 @@ Core capabilities:
 - Extension surface X1–X13: model overrides, workflow extension
   (add-only, boot-validated, ADR-0013), action/guard rebinds, strategy
   and resolver bindings — all boot-validated (`InvalidConfiguration`)
+- Concurrency-safe transitions: an optimistic compare-and-swap on the
+  state column rejects a losing concurrent transition with
+  `InvalidTransition` rather than double-applying
 - Works with bigint, ULID, and UUID keys on application models
   (ADR-0010); ships on Laravel 12+ / PHP 8.4+
