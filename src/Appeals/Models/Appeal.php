@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Syriable\Casework\Appeals\AppealState;
+use Syriable\Casework\Contracts\Stateful;
 use Syriable\Casework\Database\Factories\AppealFactory;
 use Syriable\Casework\Support\Concerns\GuardsStateColumn;
 use Syriable\Casework\Support\Concerns\HasPrefixedTable;
@@ -19,7 +20,7 @@ use Syriable\Casework\Support\Origin;
 /**
  * A request to re-examine a decision or restriction (domain model E9).
  */
-class Appeal extends Model
+class Appeal extends Model implements Stateful
 {
     use GuardsStateColumn;
 
