@@ -8,6 +8,10 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Syriable\Casework\Audit\Recorder;
+use Syriable\Casework\Cases\Strategies\AlwaysStrategy;
+use Syriable\Casework\Cases\Strategies\ManualStrategy;
+use Syriable\Casework\Cases\Strategies\ThresholdStrategy;
+use Syriable\Casework\Contracts\CaseStrategy;
 use Syriable\Casework\Exceptions\DuplicateReport;
 use Syriable\Casework\Exceptions\UnknownReason;
 use Syriable\Casework\Reporting\Events\ReportFiled;
@@ -79,10 +83,45 @@ class FileReport
 
             event(new ReportFiled($report, $by));
 
+            $this->applyCaseStrategy($report);
+
             return $report;
         });
 
         return $report;
+    }
+
+    /**
+     * Case creation strategy (FR-205/206, X7): the configured strategy
+     * decides whether the fresh report opens or joins a case; attachment
+     * runs as the System actor inside the same transaction.
+     */
+    private function applyCaseStrategy(Report $report): void
+    {
+        $strategy = $this->resolveStrategy();
+
+        $case = $strategy->caseFor($report);
+
+        if ($case !== null) {
+            app(AttachReportToCase::class)
+                ->execute($report, $case, ActorRef::system());
+        }
+    }
+
+    private function resolveStrategy(): CaseStrategy
+    {
+        $configured = config('casework.cases.strategy');
+        $configured = is_string($configured) ? $configured : 'manual';
+
+        $class = match ($configured) {
+            'always' => AlwaysStrategy::class,
+            'threshold' => ThresholdStrategy::class,
+            'manual' => ManualStrategy::class,
+            default => $configured,
+        };
+
+        /** @var CaseStrategy */
+        return app($class);
     }
 
     private function resolveReason(Reason|string $reason): Reason

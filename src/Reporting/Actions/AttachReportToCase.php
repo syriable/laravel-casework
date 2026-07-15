@@ -38,8 +38,16 @@ class AttachReportToCase
             throw InvalidTransition::withReason($report, 'attachToCase', $from, 'the target case is no longer open');
         }
 
+        // Morph ids normalize to string: an in-memory model may hold the
+        // application key as int while the string(36) column re-reads as
+        // string (ADR-0010).
+        $caseSubjectId = $case->getAttribute('subject_id');
+        $reportSubjectId = $report->getAttribute('subject_id');
+
         $sameSubject = $case->getAttribute('subject_type') === $report->getAttribute('subject_type')
-            && $case->getAttribute('subject_id') === $report->getAttribute('subject_id');
+            && is_scalar($caseSubjectId)
+            && is_scalar($reportSubjectId)
+            && (string) $caseSubjectId === (string) $reportSubjectId;
 
         if (! $sameSubject) {
             throw InvalidTransition::withReason($report, 'attachToCase', $from, 'the case concerns a different subject');
