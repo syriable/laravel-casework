@@ -17,7 +17,7 @@ use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
  * Attach an open report to an open-phase case about the same subject
- * (FR-205/206; workflow guards per docs/workflows/report.md).
+ * (FR-205, FR-206; workflow guards per docs/workflows/report.md).
  */
 class AttachReportToCase
 {

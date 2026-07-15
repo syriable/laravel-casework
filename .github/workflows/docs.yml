@@ -1,0 +1,31 @@
+name: Documentation checks
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - '**.md'
+      - '.github/workflows/docs.yml'
+
+jobs:
+  docs:
+    name: doc completeness & FR traceability
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v4
+
+      - name: Doc completeness (every public class and facade method documented)
+        run: php scripts/check-doc-completeness.php
+
+      - name: FR traceability (every MUST/SHOULD requirement anchored)
+        run: php scripts/check-fr-traceability.php

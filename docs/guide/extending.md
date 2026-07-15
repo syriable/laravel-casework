@@ -105,8 +105,9 @@ majors.
 
 ## Guard replacement (X13)
 
-Transition guards are resolved through the container per check, so a
-single guard is rebindable without touching the workflow:
+Transition guards (`Contracts\TransitionGuard`) are resolved through
+the container per check, so a single guard is rebindable without
+touching the workflow:
 
 ```php
 $this->app->bind(CustomAppealWindowGuard::class, RegionAwareWindowGuard::class);
@@ -114,7 +115,11 @@ $this->app->bind(CustomAppealWindowGuard::class, RegionAwareWindowGuard::class);
 
 ## Deliberately closed
 
-Event classes (`final`), the workflow engine, value objects, builders,
-exceptions, and audit writing (the `Recorder` is not swappable — I-04
-stays unforgeable from the extension surface). If one of these blocks
-you, open an issue instead of forking.
+Event classes (`final`), the workflow engine, value objects
+(`ActorRef`, `Origin`, `Outcome`, `RestrictionType`), the
+pending-operation builders (`PendingReport`, `PendingCase`,
+`PendingDecision`, `PendingRestriction`, `PendingWarning`,
+`PendingAppeal`, `PendingAppealResolution`), exceptions, and audit
+writing (the `Recorder` is not swappable — I-04 stays unforgeable
+from the extension surface). If one of these blocks you, open an
+issue instead of forking.

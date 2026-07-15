@@ -17,8 +17,10 @@ the specific operation's own rules (e.g.
 
 ## Default policies
 
-The package registers a policy per model at boot — only when your
-application hasn't registered its own. Defaults are safe-by-default:
+The package registers a policy per model at boot — `ReportPolicy`,
+`CasePolicy`, `RestrictionPolicy`, `WarningPolicy`, `AppealPolicy` —
+only when your application hasn't registered its own. Defaults are
+safe-by-default:
 any model actor may `file` a report and that is all; every moderation
 ability (`startReview`, `dismiss`, `decide`, `apply`, `lift`, `warn`,
 `submit`/`assign`/`review`/`resolve` on appeals, …) denies until you

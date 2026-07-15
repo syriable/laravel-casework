@@ -1,10 +1,15 @@
 {
     "name": "syriable/laravel-casework",
-    "description": "This is my package laravel-casework",
+    "description": "A UI-agnostic trust & safety platform for Laravel: reports, moderation cases, decisions, enforcement, appeals, and an append-only audit trail.",
     "keywords": [
         "syriable",
         "laravel",
-        "laravel-casework"
+        "laravel-casework",
+        "moderation",
+        "trust-and-safety",
+        "reports",
+        "appeals",
+        "audit"
     ],
     "homepage": "https://github.com/syriable/laravel-casework",
     "license": "MIT",
