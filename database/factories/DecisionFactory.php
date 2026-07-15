@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Model;
 use Syriable\Casework\Cases\Models\Decision;
 use Syriable\Casework\Support\Origin;
 use Syriable\Casework\Support\Outcome;
@@ -32,5 +33,14 @@ class DecisionFactory extends Factory
     public function withOutcome(string $outcome): static
     {
         return $this->state(['outcome' => $outcome]);
+    }
+
+    public function decidedBy(Model $decider): static
+    {
+        return $this->state([
+            'decider_type' => $decider->getMorphClass(),
+            'decider_id' => $decider->getKey(),
+            'origin' => Origin::Model,
+        ]);
     }
 }

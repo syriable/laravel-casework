@@ -60,6 +60,15 @@ class RestrictionFactory extends Factory
         return $this->state(['type' => $type]);
     }
 
+    public function issuedBy(Model $issuer): static
+    {
+        return $this->state([
+            'issuer_type' => $issuer->getMorphClass(),
+            'issuer_id' => $issuer->getKey(),
+            'origin' => Origin::Model,
+        ]);
+    }
+
     public function inScope(string $scope): static
     {
         return $this->state(['scope' => $scope]);
