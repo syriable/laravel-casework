@@ -37,7 +37,8 @@ final class PruneAuditCommand extends Command
 
         // Bulk query delete: bypasses Eloquent model events deliberately —
         // PreventsMutation guards the model API, not retention (FR-705).
-        $pruned = $class::query()->where('created_at', '<', $cutoff)->delete();
+        $deleted = $class::query()->where('created_at', '<', $cutoff)->delete();
+        $pruned = is_int($deleted) ? $deleted : 0;
 
         $this->info("Pruned {$pruned} audit entries created before {$cutoff->toDateTimeString()}.");
 
