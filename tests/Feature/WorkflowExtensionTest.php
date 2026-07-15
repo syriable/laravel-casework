@@ -9,6 +9,7 @@ use Syriable\Casework\Cases\CaseWorkflow;
 use Syriable\Casework\Cases\Models\CaseFile;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
 use Syriable\Casework\Exceptions\CaseworkException;
+use Syriable\Casework\Exceptions\InvalidTransition;
 use Syriable\Casework\Exceptions\InvalidWorkflow;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\Events\StateTransitioned;
@@ -214,6 +215,29 @@ it('runs guards through the container and lets them veto', function (): void {
         // Vetoed before any write: state unchanged.
         expect($case->refresh()->getAttribute('state'))->toBe('second_review');
     }
+});
+
+it('rejects a losing concurrent transition via the optimistic state check (R-01)', function (): void {
+    $workflow = new Workflow(app(CaseWorkflow::class));
+    $case = CaseFile::factory()->create();
+
+    // A second in-memory handle on the same row — both still see 'open'.
+    $stale = CaseFile::query()->findOrFail($case->getKey());
+
+    // First writer wins: open -> decided.
+    $workflow->transition($case, 'decide', ActorRef::system());
+
+    // The stale handle's transition is legal from its in-memory state,
+    // but the compare-and-swap finds the row already moved: it loses.
+    try {
+        $workflow->transition($stale, 'startInvestigation', ActorRef::system());
+
+        $this->fail('Expected the concurrent transition to be rejected');
+    } catch (InvalidTransition $exception) {
+        expect($exception->getMessage())->toContain('concurrently');
+    }
+
+    expect($case->refresh()->getAttribute('state'))->toBe(CaseState::Decided->value);
 });
 
 it('keeps the shipped definitions valid', function (): void {

@@ -20,6 +20,9 @@ use Syriable\Casework\Support\ModelRegistry;
  */
 class ExpireRestrictions
 {
+    /** Rows fetched per pass — bounds memory on large backlogs (R-02). */
+    private const int BATCH = 500;
+
     public function __construct(
         private readonly Recorder $recorder,
         private readonly RestrictionWorkflow $workflow,
@@ -28,33 +31,40 @@ class ExpireRestrictions
     public function execute(): int
     {
         $class = ModelRegistry::classFor('restriction');
-
-        $due = $class::query()
-            ->where('state', 'active')
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '<=', now())
-            ->get();
-
         $by = ActorRef::system();
         $count = 0;
 
-        foreach ($due as $restriction) {
-            if (! $restriction instanceof Restriction) {
-                continue;
+        // Each pass re-queries from the top: expiring a row removes it
+        // from the due set, so the batch window naturally advances
+        // without cursor bookkeeping (and tolerates rows that expire
+        // between passes).
+        do {
+            $due = $class::query()
+                ->where('state', 'active')
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now())
+                ->orderBy('id')
+                ->limit(self::BATCH)
+                ->get();
+
+            foreach ($due as $restriction) {
+                if (! $restriction instanceof Restriction) {
+                    continue;
+                }
+
+                DB::transaction(function () use ($restriction, $by): void {
+                    $from = Workflow::stateOf($restriction);
+
+                    (new Workflow($this->workflow))->transition($restriction, 'expire', $by);
+
+                    $this->recorder->record($by, 'restriction.expired', $restriction);
+
+                    event(new RestrictionExpired($restriction, $from, Workflow::stateOf($restriction), $by));
+                });
+
+                $count++;
             }
-
-            DB::transaction(function () use ($restriction, $by): void {
-                $from = Workflow::stateOf($restriction);
-
-                (new Workflow($this->workflow))->transition($restriction, 'expire', $by);
-
-                $this->recorder->record($by, 'restriction.expired', $restriction);
-
-                event(new RestrictionExpired($restriction, $from, Workflow::stateOf($restriction), $by));
-            });
-
-            $count++;
-        }
+        } while ($due->count() === self::BATCH);
 
         return $count;
     }

@@ -40,4 +40,9 @@ jobs:
         run: vendor/bin/pest --ci --coverage --min=90
 
       - name: Type coverage (>= 95%)
+        # Force Pokio synchronous: the type-coverage plugin's forked
+        # workers otherwise race on a shared .temp file on many-core
+        # runners, corrupting the generated analysis file (Phase 15).
+        env:
+          POKIO_ASYNC: 'false'
         run: vendor/bin/pest --type-coverage --min=95
