@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Syriable\Casework\Cases\CaseState;
+use Syriable\Casework\Contracts\Stateful;
 use Syriable\Casework\Database\Factories\CaseFileFactory;
 use Syriable\Casework\Support\Concerns\GuardsStateColumn;
 use Syriable\Casework\Support\Concerns\HasPrefixedTable;
@@ -19,7 +20,7 @@ use Syriable\Casework\Support\ModelRegistry;
  * The unit of moderation work (domain model E3). Named CaseFile because
  * `case` is a PHP reserved word (ADR-0008); the domain term is "case".
  */
-class CaseFile extends Model
+class CaseFile extends Model implements Stateful
 {
     use GuardsStateColumn;
 

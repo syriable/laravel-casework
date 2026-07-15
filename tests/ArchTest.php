@@ -61,6 +61,26 @@ arch('models stay side-effect-free')
         'resolve',
     ]);
 
+// ADR-0017: the workflow engine and its data carriers are final; the
+// definitions are the designed subclass point (ADR-0013).
+arch('the workflow engine is final')
+    ->expect([
+        'Syriable\Casework\States\Workflow',
+        'Syriable\Casework\States\TransitionDefinition',
+        'Syriable\Casework\States\TransitionContext',
+        'Syriable\Casework\States\Events\StateTransitioned',
+    ])
+    ->toBeFinal();
+
+arch('workflow definitions are open for extension')
+    ->expect([
+        'Syriable\Casework\Reporting\ReportWorkflow',
+        'Syriable\Casework\Cases\CaseWorkflow',
+        'Syriable\Casework\Enforcement\RestrictionWorkflow',
+        'Syriable\Casework\Appeals\AppealWorkflow',
+    ])
+    ->not->toBeFinal();
+
 // Integration edge stays final (ADR-0017).
 arch('the service provider and facade are final')
     ->expect([

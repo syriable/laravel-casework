@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Syriable\Casework\Contracts\Stateful;
 use Syriable\Casework\Database\Factories\RestrictionFactory;
 use Syriable\Casework\Enforcement\RestrictionState;
 use Syriable\Casework\Support\Concerns\GuardsStateColumn;
@@ -27,7 +28,7 @@ use Syriable\Casework\Support\Origin;
  * @property Carbon|null $expires_at
  * @property Carbon|null $lifted_at
  */
-class Restriction extends Model
+class Restriction extends Model implements Stateful
 {
     use GuardsStateColumn;
 

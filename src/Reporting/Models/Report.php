@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Syriable\Casework\Contracts\Stateful;
 use Syriable\Casework\Database\Factories\ReportFactory;
 use Syriable\Casework\Reporting\ReportState;
 use Syriable\Casework\Support\Concerns\GuardsStateColumn;
@@ -19,7 +20,7 @@ use Syriable\Casework\Support\Origin;
 /**
  * A reporter's claim about a subject (domain model E1).
  */
-class Report extends Model
+class Report extends Model implements Stateful
 {
     use GuardsStateColumn;
 
