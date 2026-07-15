@@ -17,7 +17,7 @@ use Syriable\Casework\Support\RestrictionType;
 trait InteractsWithRestrictions
 {
     /**
-     * Full restriction history.
+     * Full restriction history (FR-409).
      *
      * @return MorphMany<Model, $this>
      */

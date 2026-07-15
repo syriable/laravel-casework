@@ -15,7 +15,7 @@ use Syriable\Casework\Support\ModelRegistry;
 trait InteractsWithReports
 {
     /**
-     * All reports about this model.
+     * All reports about this model (FR-106).
      *
      * @return MorphMany<Model, $this>
      */

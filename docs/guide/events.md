@@ -23,6 +23,16 @@ contract). Creation events (`ReportFiled`, `CaseOpened`,
 `RestrictionApplied`, `WarningIssued`, `AppealSubmitted`) carry no
 `$from` — creation is the implicit pseudo-state.
 
+The full surface, one class per action:
+
+| Module | Events |
+|---|---|
+| Reporting | `ReportFiled`, `ReportReviewStarted`, `ReportAttachedToCase`, `ReportDismissed`, `ReportResolved` |
+| Cases | `CaseOpened`, `CaseAssigned`, `CaseInvestigationStarted`, `CaseAwaitingDecision`, `CaseEscalated`, `CaseNoteAdded`, `CaseEvidenceAttached`, `CaseDecided`, `CaseClosed` |
+| Enforcement | `RestrictionApplied`, `RestrictionLifted`, `RestrictionExpired`, `RestrictionSuperseded`, `WarningIssued` |
+| Appeals | `AppealSubmitted`, `AppealAssigned`, `AppealReviewStarted`, `AppealUpheld`, `AppealOverturned`, `AppealRejected` |
+| Generic | `StateTransitioned` (custom transitions only) |
+
 `States\Events\StateTransitioned` is dispatched **only** for
 application-defined custom transitions (ADR-0013); core transitions
 carry their dedicated classes.
