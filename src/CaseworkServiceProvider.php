@@ -12,6 +12,7 @@ use Syriable\Casework\Cases\CaseWorkflow;
 use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
+use Syriable\Casework\Policies\CasePolicy;
 use Syriable\Casework\Policies\ReportPolicy;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\WorkflowDefinition;
@@ -67,6 +68,7 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         // Default policies register early; an application registering its
         // own policy later overrides them (FR-601).
         Gate::policy(ModelRegistry::classFor('report'), ReportPolicy::class);
+        Gate::policy(ModelRegistry::classFor('case'), CasePolicy::class);
 
         // Migrations read the table prefix from config at run time, so the
         // published copies honor the application's prefix (FR-954).

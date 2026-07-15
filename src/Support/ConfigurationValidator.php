@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Support;
 
 use Illuminate\Support\Arr;
+use Syriable\Casework\Contracts\CaseStrategy;
 use Syriable\Casework\Contracts\Notifier;
 use Syriable\Casework\Exceptions\InvalidConfiguration;
 
@@ -110,12 +111,14 @@ final class ConfigurationValidator
         $strategy = Arr::get($config, 'cases.strategy');
 
         $isNamed = is_string($strategy) && in_array($strategy, self::CASE_STRATEGIES, true);
-        $isClass = is_string($strategy) && str_contains($strategy, '\\') && class_exists($strategy);
+        $isClass = is_string($strategy) && str_contains($strategy, '\\')
+            && class_exists($strategy)
+            && is_a($strategy, CaseStrategy::class, true);
 
         if (! $isNamed && ! $isClass) {
             throw InvalidConfiguration::forKey(
                 'cases.strategy',
-                "must be one of 'always', 'threshold', 'manual', or an existing class name",
+                "must be one of 'always', 'threshold', 'manual', or a class implementing ".CaseStrategy::class,
             );
         }
 
