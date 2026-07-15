@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
 
-            $table->index(['subject_type', 'subject_id', 'expires_at']);
+            $table->index(['subject_type', 'subject_id', 'expires_at'], $this->table('warnings').'_subject_idx');
         });
     }
 

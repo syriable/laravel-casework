@@ -22,9 +22,9 @@ return new class extends Migration
             // Append-only: no updated_at (ADR-0011).
             $table->timestamp('created_at')->nullable()->index();
 
-            $table->index(['auditable_type', 'auditable_id', 'created_at']);
-            $table->index(['actor_type', 'actor_id', 'created_at']);
-            $table->index(['action', 'created_at']);
+            $table->index(['auditable_type', 'auditable_id', 'created_at'], $this->table('audit_entries').'_auditable_idx');
+            $table->index(['actor_type', 'actor_id', 'created_at'], $this->table('audit_entries').'_actor_idx');
+            $table->index(['action', 'created_at'], $this->table('audit_entries').'_action_idx');
         });
     }
 

@@ -20,7 +20,7 @@ return new class extends Migration
             // Immutable record: no updated_at (ADR-0003).
             $table->timestamp('created_at')->nullable();
 
-            $table->index(['case_id', 'created_at']);
+            $table->index(['case_id', 'created_at'], $this->table('case_notes').'_case_idx');
         });
     }
 

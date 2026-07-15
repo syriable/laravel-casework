@@ -21,9 +21,9 @@ return new class extends Migration
             $table->string('assignee_id', 36)->nullable();
             $table->timestamps();
 
-            $table->index(['subject_type', 'subject_id']);
-            $table->index(['assignee_type', 'assignee_id', 'state']);
-            $table->index(['state', 'priority']);
+            $table->index(['subject_type', 'subject_id'], $this->table('cases').'_subject_idx');
+            $table->index(['assignee_type', 'assignee_id', 'state'], $this->table('cases').'_assignee_idx');
+            $table->index(['state', 'priority'], $this->table('cases').'_queue_idx');
         });
     }
 

@@ -31,8 +31,8 @@ return new class extends Migration
             $table->timestamps();
 
             // The FR-405 hot path: subject + type + state + expiry in one index.
-            $table->index(['subject_type', 'subject_id', 'type', 'state', 'expires_at'], 'casework_restrictions_hot_path');
-            $table->index(['state', 'expires_at']);
+            $table->index(['subject_type', 'subject_id', 'type', 'state', 'expires_at'], $this->table('restrictions').'_hot_path');
+            $table->index(['state', 'expires_at'], $this->table('restrictions').'_expiry_idx');
         });
     }
 

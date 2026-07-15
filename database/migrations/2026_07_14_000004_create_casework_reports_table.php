@@ -25,8 +25,8 @@ return new class extends Migration
             $table->foreignId('decision_id')->nullable()->constrained($this->table('decisions'))->restrictOnDelete();
             $table->timestamps();
 
-            $table->index(['subject_type', 'subject_id', 'state']);
-            $table->index(['reporter_type', 'reporter_id']);
+            $table->index(['subject_type', 'subject_id', 'state'], $this->table('reports').'_subject_idx');
+            $table->index(['reporter_type', 'reporter_id'], $this->table('reports').'_reporter_idx');
         });
     }
 

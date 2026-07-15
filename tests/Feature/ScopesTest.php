@@ -57,7 +57,8 @@ it('applies the real-time expiry rule to restriction activity', function (): voi
     $future = Restriction::factory()->about($subject)->expiringAt(now()->addWeek())->create();
     $stale = Restriction::factory()->about($subject)->stalePastExpiry()->create();
 
-    expect(Restriction::query()->active()->pluck('id')->all())
+    // Row order is not guaranteed across databases — compare sorted.
+    expect(Restriction::query()->active()->orderBy('id')->pluck('id')->all())
         ->toBe([$permanent->id, $future->id])
         ->and($permanent->isActive())->toBeTrue()
         ->and($permanent->isPermanent())->toBeTrue()
