@@ -9,11 +9,14 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Syriable\Casework\Appeals\AppealWorkflow;
 use Syriable\Casework\Cases\CaseWorkflow;
+use Syriable\Casework\Commands\ExpireRestrictionsCommand;
 use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
 use Syriable\Casework\Policies\CasePolicy;
 use Syriable\Casework\Policies\ReportPolicy;
+use Syriable\Casework\Policies\RestrictionPolicy;
+use Syriable\Casework\Policies\WarningPolicy;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\WorkflowDefinition;
 use Syriable\Casework\Support\ConfigurationValidator;
@@ -32,7 +35,8 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         $package
             ->name('casework')
             ->hasConfigFile()
-            ->hasCommand(PruneAuditCommand::class);
+            ->hasCommand(PruneAuditCommand::class)
+            ->hasCommand(ExpireRestrictionsCommand::class);
     }
 
     /** @var list<class-string<WorkflowDefinition>> */
@@ -69,6 +73,8 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         // own policy later overrides them (FR-601).
         Gate::policy(ModelRegistry::classFor('report'), ReportPolicy::class);
         Gate::policy(ModelRegistry::classFor('case'), CasePolicy::class);
+        Gate::policy(ModelRegistry::classFor('restriction'), RestrictionPolicy::class);
+        Gate::policy(ModelRegistry::classFor('warning'), WarningPolicy::class);
 
         // Migrations read the table prefix from config at run time, so the
         // published copies honor the application's prefix (FR-954).

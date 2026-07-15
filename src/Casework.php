@@ -16,12 +16,19 @@ use Syriable\Casework\Cases\Models\CaseFile;
 use Syriable\Casework\Cases\Models\Evidence;
 use Syriable\Casework\Cases\Models\Note;
 use Syriable\Casework\Cases\PendingCase;
+use Syriable\Casework\Cases\PendingDecision;
+use Syriable\Casework\Enforcement\Actions\LiftRestriction;
+use Syriable\Casework\Enforcement\Models\Restriction;
+use Syriable\Casework\Enforcement\PendingRestriction;
+use Syriable\Casework\Enforcement\PendingWarning;
 use Syriable\Casework\Reporting\Actions\AttachReportToCase;
 use Syriable\Casework\Reporting\Actions\DismissReport;
 use Syriable\Casework\Reporting\Actions\StartReportReview;
 use Syriable\Casework\Reporting\Models\Report;
 use Syriable\Casework\Reporting\PendingReport;
 use Syriable\Casework\Support\ActorRef;
+use Syriable\Casework\Support\ModelRegistry;
+use Syriable\Casework\Support\RestrictionType;
 
 /**
  * Facade root: thin delegation to actions (ADR-0005) — never a second
@@ -103,6 +110,74 @@ final class Casework
     public function attachEvidence(CaseFile $case, Model|ActorRef $by, ?Model $subject = null, ?array $data = null): Evidence
     {
         return app(AttachEvidence::class)->execute($case, $this->actor($by), $subject, $data);
+    }
+
+    /**
+     * Begin deciding a case (Phase 5 §4).
+     */
+    public function decide(CaseFile $case): PendingDecision
+    {
+        return new PendingDecision($case);
+    }
+
+    /**
+     * Begin restricting a subject (Phase 5 §5).
+     */
+    public function restrict(Model $subject, string $type): PendingRestriction
+    {
+        return new PendingRestriction($subject, $type);
+    }
+
+    /**
+     * Begin suspending a subject — a restriction of the shipped
+     * suspension type (FR-407).
+     */
+    public function suspend(Model $subject): PendingRestriction
+    {
+        return new PendingRestriction($subject, RestrictionType::SUSPENSION);
+    }
+
+    /**
+     * Begin warning a subject (FR-406).
+     */
+    public function warn(Model $subject): PendingWarning
+    {
+        return new PendingWarning($subject);
+    }
+
+    /**
+     * Lift an active restriction early (FR-408).
+     */
+    public function lift(Restriction $restriction, Model|ActorRef $by, string $reason): Restriction
+    {
+        return app(LiftRestriction::class)->execute($restriction, $this->actor($by), $reason);
+    }
+
+    /**
+     * The FR-405 hot path for non-trait contexts: one indexed query,
+     * honoring expiry in real time.
+     */
+    public function isRestricted(Model $subject, ?string $type = null, ?string $scope = null): bool
+    {
+        $class = ModelRegistry::classFor('restriction');
+
+        $query = $class::query()
+            ->where('subject_type', $subject->getMorphClass())
+            ->where('subject_id', $subject->getKey())
+            ->where('state', 'active')
+            ->where(function ($expiry): void {
+                $expiry->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
+
+        if ($type !== null) {
+            $query->where('type', $type);
+        }
+
+        if ($scope !== null) {
+            $query->where('scope', $scope);
+        }
+
+        return $query->exists();
     }
 
     private function actor(Model|ActorRef $by): ActorRef

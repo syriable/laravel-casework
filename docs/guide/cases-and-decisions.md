@@ -82,7 +82,25 @@ CaseFile::query()->forSubject($post)->decided()->get();
 
 ## Decisions
 
-Deciding a case (`Casework::decide($case)->…->finalize()`) arrives with the
-enforcement module — see [enforcement](enforcement.md) once available. A
-decision resolves the case's reports and applies its enforcement actions
-atomically.
+A decision resolves a case — atomically transitioning it, resolving its open
+reports, and applying any enforcement actions in one transaction:
+
+```php
+$decision = Casework::decide($case)
+    ->by($moderator)
+    ->outcome(Outcome::UPHOLD)                 // dismiss / uphold / escalate / custom
+    ->rationale('Repeated spam after warning.')
+    ->withSuspension(days: 30)
+    ->withRestriction('posting', permanent: true, scope: 'listings')
+    ->withWarning('Final notice.')
+    ->finalize();
+```
+
+Decisions are immutable: amending or reversing means a new decision
+referencing the original via `->supersedes($decision)`. Outcomes are an open
+set — `dismiss`, `uphold`, and `escalate` ship; add your own via
+`casework.decisions.outcomes`. When `prevent_self_moderation` is on
+(default), an actor cannot decide a case whose subject is themselves.
+
+Enforcement details — restriction types, durations, lifting, the real-time
+expiry rule — live in the [enforcement guide](enforcement.md).

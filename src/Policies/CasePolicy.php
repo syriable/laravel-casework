@@ -40,6 +40,11 @@ final class CasePolicy
         return false;
     }
 
+    public function decide(Model $actor, CaseFile $case): bool
+    {
+        return false;
+    }
+
     public function close(Model $actor, CaseFile $case): bool
     {
         return false;
