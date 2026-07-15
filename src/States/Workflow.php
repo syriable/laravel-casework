@@ -42,7 +42,16 @@ final readonly class Workflow
 
         $this->runGuards($transitionContext);
 
-        $record->writeStateThroughTransition($transition->to);
+        // Optimistic state check (Phase 15 R-01): the write succeeds only
+        // if the row still holds $from — a concurrent transition loses.
+        if (! $record->writeStateThroughTransition($transition->to, $from)) {
+            throw InvalidTransition::withReason(
+                $record,
+                $name,
+                $from,
+                'the record was transitioned concurrently',
+            );
+        }
 
         if ($this->definition->isCustom($transition)) {
             event(new StateTransitioned($record, $name, $from, $transition->to, $by));

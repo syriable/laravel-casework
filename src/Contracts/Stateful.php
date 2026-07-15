@@ -11,7 +11,12 @@ namespace Syriable\Casework\Contracts;
 interface Stateful
 {
     /**
+     * Write the state column. With $expectedFrom, the write is a
+     * compare-and-swap: it succeeds only if the stored state still
+     * matches, returning false when a concurrent transition moved the
+     * row first (Phase 15 finding R-01).
+     *
      * @internal Called by the workflow engine only (ADR-0012).
      */
-    public function writeStateThroughTransition(string $state): void;
+    public function writeStateThroughTransition(string $state, ?string $expectedFrom = null): bool;
 }
