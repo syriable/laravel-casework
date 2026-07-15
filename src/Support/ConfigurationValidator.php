@@ -6,7 +6,9 @@ namespace Syriable\Casework\Support;
 
 use Illuminate\Support\Arr;
 use Syriable\Casework\Contracts\CaseStrategy;
+use Syriable\Casework\Contracts\CaseTriageStage;
 use Syriable\Casework\Contracts\Notifier;
+use Syriable\Casework\Contracts\ReportIntakeStage;
 use Syriable\Casework\Exceptions\InvalidConfiguration;
 
 /**
@@ -40,8 +42,8 @@ final class ConfigurationValidator
         $this->validateAppeals($config);
         $this->validateBoolean($config, 'authorization.prevent_self_moderation');
         $this->validateNotifiers($config);
-        $this->validateClassList($config, 'pipelines.intake');
-        $this->validateClassList($config, 'pipelines.triage');
+        $this->validateClassList($config, 'pipelines.intake', ReportIntakeStage::class);
+        $this->validateClassList($config, 'pipelines.triage', CaseTriageStage::class);
         $this->validateNullableDays($config, 'audit.prune_after_days');
     }
 
@@ -220,12 +222,13 @@ final class ConfigurationValidator
     }
 
     /**
-     * Pipeline stage lists. Stage contracts arrive with their modules
-     * (M5/M6); until then only existence is checkable.
+     * Pipeline stage lists: every entry must exist and implement the
+     * stage contract (extension guarantee #2 — boot, never runtime).
      *
      * @param  array<string, mixed>  $config
+     * @param  class-string  $contract
      */
-    private function validateClassList(array $config, string $key): void
+    private function validateClassList(array $config, string $key, string $contract): void
     {
         $classes = Arr::get($config, $key);
 
@@ -238,6 +241,10 @@ final class ConfigurationValidator
                 $shown = is_string($class) ? $class : get_debug_type($class);
 
                 throw InvalidConfiguration::forKey($key, "class {$shown} does not exist");
+            }
+
+            if (! is_a($class, $contract, true)) {
+                throw InvalidConfiguration::forKey($key, "{$class} must implement {$contract}");
             }
         }
     }
