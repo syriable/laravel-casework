@@ -35,9 +35,11 @@ class AssignCase
         }
 
         return DB::transaction(function () use ($case, $assignee, $by): CaseFile {
-            // Attribute access, not MorphTo::first(): with a null morph
-            // type the relation query is invalid SQL on pgsql/MySQL.
-            $previous = $case->assignee;
+            // getResults() on a fresh relation instance: it re-reads the
+            // current morph columns (attribute access would return a stale
+            // cached value on reassignment) and guards null keys, where
+            // MorphTo::first() builds invalid SQL on pgsql/MySQL.
+            $previous = $case->assignee()->getResults();
             $previous = $previous instanceof Model ? $previous : null;
 
             $case->update([
