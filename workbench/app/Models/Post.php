@@ -6,16 +6,20 @@ namespace Workbench\App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Syriable\Casework\Concerns\InteractsWithReports;
+use Syriable\Casework\Contracts\Reportable;
 use Workbench\Database\Factories\PostFactory;
 
 /**
  * Workbench fixture: a bigint-keyed subject model for package tests
  * (testing strategy §2 — validates ADR-0010's universal morph columns).
  */
-class Post extends Model
+class Post extends Model implements Reportable
 {
     /** @use HasFactory<PostFactory> */
     use HasFactory;
+
+    use InteractsWithReports;
 
     protected $table = 'posts';
 

@@ -31,4 +31,14 @@ final class InvalidTransition extends RuntimeException implements CaseworkExcept
             $record::class,
         ));
     }
+
+    public static function withReason(Model $record, string $transition, string $fromState, string $reason): self
+    {
+        return new self($record, $transition, $fromState, sprintf(
+            'Transition [%s] is not allowed on %s: %s.',
+            $transition,
+            $record::class,
+            $reason,
+        ));
+    }
 }
