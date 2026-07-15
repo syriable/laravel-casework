@@ -8,6 +8,7 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Syriable\Casework\Appeals\AppealWorkflow;
 use Syriable\Casework\Cases\CaseWorkflow;
+use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
 use Syriable\Casework\Reporting\ReportWorkflow;
@@ -26,7 +27,8 @@ final class CaseworkServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('casework')
-            ->hasConfigFile();
+            ->hasConfigFile()
+            ->hasCommand(PruneAuditCommand::class);
     }
 
     /** @var list<class-string<WorkflowDefinition>> */

@@ -28,12 +28,24 @@ it('omits updated_at on immutable tables', function (): void {
 });
 
 it('rolls back cleanly', function (): void {
-    $this->artisan('migrate:rollback')->assertSuccessful();
+    // Invoke the migration objects directly: artisan rollback's batch
+    // bookkeeping is not transaction-safe on MariaDB (implicit-commit
+    // DDL inside RefreshDatabase's wrapper) and flakes; down()/up()
+    // correctness is what this test owns.
+    $files = glob(__DIR__.'/../../database/migrations/*.php') ?: [];
+    expect($files)->toHaveCount(10);
+
+    foreach (array_reverse($files) as $file) {
+        (require $file)->down();
+    }
 
     expect(Schema::hasTable('casework_reports'))->toBeFalse()
         ->and(Schema::hasTable('casework_audit_entries'))->toBeFalse();
 
-    $this->artisan('migrate')->assertSuccessful();
+    foreach ($files as $file) {
+        (require $file)->up();
+    }
 
-    expect(Schema::hasTable('casework_reports'))->toBeTrue();
+    expect(Schema::hasTable('casework_reports'))->toBeTrue()
+        ->and(Schema::hasTable('casework_audit_entries'))->toBeTrue();
 });

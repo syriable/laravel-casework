@@ -89,3 +89,12 @@ arch('the service provider and facade are final')
         'Syriable\Casework\Facades\Casework',
     ])
     ->toBeFinal();
+
+// The audit write-path is unforgeable from the extension surface
+// (ADR-0017, T10): final, and commands are integration edge.
+arch('the audit recorder and commands are final')
+    ->expect([
+        'Syriable\Casework\Audit\Recorder',
+        'Syriable\Casework\Commands',
+    ])
+    ->toBeFinal();
