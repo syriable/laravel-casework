@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Syriable\Casework;
 
+use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Syriable\Casework\Appeals\AppealWorkflow;
@@ -11,9 +12,11 @@ use Syriable\Casework\Cases\CaseWorkflow;
 use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
+use Syriable\Casework\Policies\ReportPolicy;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\WorkflowDefinition;
 use Syriable\Casework\Support\ConfigurationValidator;
+use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\NullScopeResolver;
 
 /**
@@ -60,6 +63,10 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         foreach (self::WORKFLOWS as $workflow) {
             $this->app->make($workflow)->validate();
         }
+
+        // Default policies register early; an application registering its
+        // own policy later overrides them (FR-601).
+        Gate::policy(ModelRegistry::classFor('report'), ReportPolicy::class);
 
         // Migrations read the table prefix from config at run time, so the
         // published copies honor the application's prefix (FR-954).
