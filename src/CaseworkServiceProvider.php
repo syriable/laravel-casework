@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Syriable\Casework;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Syriable\Casework\Appeals\AppealWorkflow;
 use Syriable\Casework\Cases\CaseWorkflow;
+use Syriable\Casework\Cases\Events\CaseOpened;
+use Syriable\Casework\Cases\Listeners\RunTriagePipeline;
 use Syriable\Casework\Commands\ExpireRestrictionsCommand;
 use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
@@ -22,6 +25,7 @@ use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\WorkflowDefinition;
 use Syriable\Casework\Support\ConfigurationValidator;
 use Syriable\Casework\Support\ModelRegistry;
+use Syriable\Casework\Support\NotifierDispatcher;
 use Syriable\Casework\Support\NullScopeResolver;
 
 /**
@@ -77,6 +81,12 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         Gate::policy(ModelRegistry::classFor('restriction'), RestrictionPolicy::class);
         Gate::policy(ModelRegistry::classFor('warning'), WarningPolicy::class);
         Gate::policy(ModelRegistry::classFor('appeal'), AppealPolicy::class);
+
+        // The notifier loop (FR-803, X8): every package event, in listed
+        // order, after commit. The triage pipeline (FR-804, X10) runs
+        // when a case opens.
+        Event::listen('Syriable\\Casework\\*', NotifierDispatcher::class);
+        Event::listen(CaseOpened::class, RunTriagePipeline::class);
 
         // Migrations read the table prefix from config at run time, so the
         // published copies honor the application's prefix (FR-954).

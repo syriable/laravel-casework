@@ -9,6 +9,8 @@ use Syriable\Casework\Exceptions\InvalidConfiguration;
 use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Support\ConfigurationValidator;
 use Syriable\Casework\Support\ModelRegistry;
+use Syriable\Casework\Tests\Support\EscalatesTriageStage;
+use Syriable\Casework\Tests\Support\TagsMetadataStage;
 
 /**
  * Boot validation of every config key (FR-951/952, ADR-0016).
@@ -71,6 +73,10 @@ it('rejects invalid values with the offending key', function (array $overrides, 
     'non-notifier class' => [['notifiers' => [Model::class]], 'notifiers'],
     'missing intake stage' => [['pipelines.intake' => ['App\\Missing\\Stage']], 'pipelines.intake'],
     'missing triage stage' => [['pipelines.triage' => ['App\\Missing\\Stage']], 'pipelines.triage'],
+    'non-implementing intake stage' => [['pipelines.intake' => [Model::class]], 'pipelines.intake'],
+    'non-implementing triage stage' => [['pipelines.triage' => [Model::class]], 'pipelines.triage'],
+    'triage stage in intake list' => [['pipelines.intake' => [EscalatesTriageStage::class]], 'pipelines.intake'],
+    'intake stage in triage list' => [['pipelines.triage' => [TagsMetadataStage::class]], 'pipelines.triage'],
     'zero prune days' => [['audit.prune_after_days' => 0], 'audit.prune_after_days'],
     'non-array models' => [['models' => 'nope'], 'models'],
     'empty model class' => [['models.report' => ''], 'models.report'],
@@ -124,6 +130,13 @@ it('accepts a valid notifier implementation', function (): void {
     };
 
     validateConfigWith(['notifiers' => [$notifier::class]]);
+})->throwsNoExceptions();
+
+it('accepts stage lists implementing their contracts', function (): void {
+    validateConfigWith([
+        'pipelines.intake' => [TagsMetadataStage::class],
+        'pipelines.triage' => [EscalatesTriageStage::class],
+    ]);
 })->throwsNoExceptions();
 
 it('accepts a null appeal window and custom open-set values', function (): void {

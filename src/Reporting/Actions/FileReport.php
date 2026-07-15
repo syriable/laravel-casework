@@ -6,6 +6,7 @@ namespace Syriable\Casework\Reporting\Actions;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\DB;
 use Syriable\Casework\Audit\Recorder;
 use Syriable\Casework\Cases\Strategies\AlwaysStrategy;
@@ -17,6 +18,7 @@ use Syriable\Casework\Exceptions\UnknownReason;
 use Syriable\Casework\Reporting\Events\ReportFiled;
 use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Reporting\Models\Report;
+use Syriable\Casework\Reporting\ReportIntake;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\Workflow;
 use Syriable\Casework\Support\ActorRef;
@@ -58,7 +60,14 @@ class FileReport
 
         $this->guardAgainstDuplicates($by, $subject, $reason);
 
-        $report = DB::transaction(function () use ($subject, $by, $reason, $comment, $metadata): Report {
+        // Intake automation (FR-804, X9): after guards, before
+        // persistence. A stage throwing here refuses intake — nothing
+        // has been written.
+        $intake = $this->runIntakePipeline(
+            new ReportIntake($subject, $by, $reason, $comment, $metadata),
+        );
+
+        $report = DB::transaction(function () use ($subject, $by, $reason, $intake): Report {
             $class = ModelRegistry::classFor('report');
 
             /** @var Report $report */
@@ -69,8 +78,8 @@ class FileReport
                 'reporter_id' => $by->actor?->getKey(),
                 'origin' => $by->origin,
                 'reason_id' => $reason->getKey(),
-                'comment' => $comment,
-                'metadata' => $metadata === [] ? null : $metadata,
+                'comment' => $intake->comment,
+                'metadata' => $intake->metadata === [] ? null : $intake->metadata,
             ]);
 
             (new Workflow($this->workflow))->initialize($report, 'file', $by);
@@ -83,7 +92,15 @@ class FileReport
 
             event(new ReportFiled($report, $by));
 
-            $this->applyCaseStrategy($report);
+            // Auto-dismissal (X9): filed and dismissed both land in the
+            // audit trail, attributed to the System (FR-805).
+            if ($intake->shouldDismiss()) {
+                app(DismissReport::class)->execute($report, ActorRef::system());
+
+                return $report;
+            }
+
+            $this->applyCaseStrategy($report, $intake);
 
             return $report;
         });
@@ -91,14 +108,39 @@ class FileReport
         return $report;
     }
 
+    private function runIntakePipeline(ReportIntake $intake): ReportIntake
+    {
+        $stages = config('casework.pipelines.intake');
+
+        if (! is_array($stages) || $stages === []) {
+            return $intake;
+        }
+
+        $result = app(Pipeline::class)
+            ->send($intake)
+            ->through($stages)
+            ->then(fn (ReportIntake $intake): ReportIntake => $intake);
+
+        // Stages mutate and pass on the same context; a short-circuiting
+        // stage returns it directly. Anything else falls back to it.
+        return $result instanceof ReportIntake ? $result : $intake;
+    }
+
     /**
      * Case creation strategy (FR-205/206, X7): the configured strategy
-     * decides whether the fresh report opens or joins a case; attachment
-     * runs as the System actor inside the same transaction.
+     * decides whether the fresh report opens or joins a case, unless an
+     * intake stage forced or suppressed it (X9); attachment runs as the
+     * System actor inside the same transaction.
      */
-    private function applyCaseStrategy(Report $report): void
+    private function applyCaseStrategy(Report $report, ReportIntake $intake): void
     {
-        $strategy = $this->resolveStrategy();
+        if ($intake->shouldSuppressCase()) {
+            return;
+        }
+
+        $strategy = $intake->shouldForceCase()
+            ? app(AlwaysStrategy::class)
+            : $this->resolveStrategy();
 
         $case = $strategy->caseFor($report);
 
