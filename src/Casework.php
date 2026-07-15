@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace Syriable\Casework;
 
 use Illuminate\Database\Eloquent\Model;
+use Syriable\Casework\Appeals\Actions\AssignAppeal;
+use Syriable\Casework\Appeals\Actions\StartAppealReview;
+use Syriable\Casework\Appeals\Models\Appeal;
+use Syriable\Casework\Appeals\PendingAppeal;
+use Syriable\Casework\Appeals\PendingAppealResolution;
 use Syriable\Casework\Cases\Actions\AddNote;
 use Syriable\Casework\Cases\Actions\AssignCase;
 use Syriable\Casework\Cases\Actions\AttachEvidence;
@@ -32,8 +37,7 @@ use Syriable\Casework\Support\RestrictionType;
 
 /**
  * Facade root: thin delegation to actions (ADR-0005) — never a second
- * implementation. Enforcement and appeal operations land with
- * milestones M7–M8.
+ * implementation.
  */
 final class Casework
 {
@@ -151,6 +155,38 @@ final class Casework
     public function lift(Restriction $restriction, Model|ActorRef $by, string $reason): Restriction
     {
         return app(LiftRestriction::class)->execute($restriction, $this->actor($by), $reason);
+    }
+
+    /**
+     * Begin appealing a decision or restriction (Phase 5 §6, FR-501).
+     */
+    public function appeal(Model $decisionOrRestriction): PendingAppeal
+    {
+        return new PendingAppeal($decisionOrRestriction);
+    }
+
+    /**
+     * Assign an appeal to a reviewer (FR-505).
+     */
+    public function assignAppeal(Appeal $appeal, Model $to, Model|ActorRef $by): Appeal
+    {
+        return app(AssignAppeal::class)->execute($appeal, $to, $this->actor($by));
+    }
+
+    /**
+     * Move a submitted appeal under review.
+     */
+    public function startAppealReview(Appeal $appeal, Model|ActorRef $by): Appeal
+    {
+        return app(StartAppealReview::class)->execute($appeal, $this->actor($by));
+    }
+
+    /**
+     * Begin resolving an appeal — uphold, overturn, or reject (FR-502).
+     */
+    public function resolveAppeal(Appeal $appeal): PendingAppealResolution
+    {
+        return new PendingAppealResolution($appeal);
     }
 
     /**

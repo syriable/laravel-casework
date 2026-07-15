@@ -52,4 +52,17 @@ class AppealFactory extends Factory
             'origin' => Origin::Model,
         ]);
     }
+
+    public function underReview(): static
+    {
+        return $this->state(['state' => AppealState::UnderReview->value]);
+    }
+
+    public function reviewedBy(Model $reviewer): static
+    {
+        return $this->state([
+            'reviewer_type' => $reviewer->getMorphClass(),
+            'reviewer_id' => $reviewer->getKey(),
+        ]);
+    }
 }

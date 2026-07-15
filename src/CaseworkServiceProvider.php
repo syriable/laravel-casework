@@ -13,6 +13,7 @@ use Syriable\Casework\Commands\ExpireRestrictionsCommand;
 use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
+use Syriable\Casework\Policies\AppealPolicy;
 use Syriable\Casework\Policies\CasePolicy;
 use Syriable\Casework\Policies\ReportPolicy;
 use Syriable\Casework\Policies\RestrictionPolicy;
@@ -75,6 +76,7 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         Gate::policy(ModelRegistry::classFor('case'), CasePolicy::class);
         Gate::policy(ModelRegistry::classFor('restriction'), RestrictionPolicy::class);
         Gate::policy(ModelRegistry::classFor('warning'), WarningPolicy::class);
+        Gate::policy(ModelRegistry::classFor('appeal'), AppealPolicy::class);
 
         // Migrations read the table prefix from config at run time, so the
         // published copies honor the application's prefix (FR-954).
