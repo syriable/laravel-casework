@@ -14,9 +14,13 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Syriable\\Casework\\Database\\Factories\\'.class_basename($modelName).'Factory'
-        );
+        Factory::guessFactoryNamesUsing(function (string $modelName): string {
+            if (str_starts_with($modelName, 'Workbench\\')) {
+                return 'Workbench\\Database\\Factories\\'.class_basename($modelName).'Factory';
+            }
+
+            return 'Syriable\\Casework\\Database\\Factories\\'.class_basename($modelName).'Factory';
+        });
     }
 
     protected function getPackageProviders($app)
@@ -31,5 +35,10 @@ class TestCase extends Orchestra
         // The integration workflow overrides DB_CONNECTION to run the same
         // suite against MySQL / PostgreSQL / MariaDB (testing strategy §5).
         config()->set('database.default', env('DB_CONNECTION', 'testing'));
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__.'/../workbench/database/migrations');
     }
 }

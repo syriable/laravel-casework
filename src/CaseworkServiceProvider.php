@@ -35,5 +35,13 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         $config = (array) config('casework');
 
         (new ConfigurationValidator)->validate($config);
+
+        // Migrations read the table prefix from config at run time, so the
+        // published copies honor the application's prefix (FR-954).
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ], 'casework-migrations');
     }
 }
