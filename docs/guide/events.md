@@ -77,6 +77,38 @@ implement `Notifier` fails with `InvalidConfiguration`.
 
 The package itself never sends notifications.
 
+### Subscribing to specific events
+
+A notifier that only cares about a few events can implement
+`FiltersEvents` alongside `Notifier`. The dispatcher consults the static
+subscription list **before resolving the class**, so a notifier is never
+built for an event it did not subscribe to:
+
+```php
+use Syriable\Casework\Contracts\FiltersEvents;
+use Syriable\Casework\Contracts\Notifier;
+use Syriable\Casework\Enforcement\Events\RestrictionApplied;
+use Syriable\Casework\Cases\Events\CaseDecided;
+
+class EnforcementNotifier implements FiltersEvents, Notifier
+{
+    public static function subscribesTo(): array
+    {
+        return [RestrictionApplied::class, CaseDecided::class];
+    }
+
+    public function notify(object $event): void
+    {
+        // only ever receives the two events above
+    }
+}
+```
+
+An event matches when it is an instance of any listed class, so listing a
+base event subscribes to its subclasses too. A notifier that does *not*
+implement `FiltersEvents` keeps the original behavior and receives every
+event.
+
 ## Queued listeners: serialization and re-fetch
 
 Events carry live Eloquent models. A queued listener using

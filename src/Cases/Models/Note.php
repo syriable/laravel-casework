@@ -27,6 +27,9 @@ class Note extends Model
 
     public const UPDATED_AT = null;
 
+    // Written only through the package's audited actions; never bind
+    // request input to these models directly (ADR-0018). Records are
+    // immutable after creation (PreventsMutation, I-07).
     protected $guarded = [];
 
     protected function casts(): array

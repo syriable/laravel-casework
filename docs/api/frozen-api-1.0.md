@@ -17,11 +17,14 @@ pending-operation builder internals, the workflow engine internals,
 and the model classes' non-relation internals. Decorating subclasses
 call the parent (extending guide).
 
-## Contracts (10)
+## Contracts (11)
 
 `Contracts\CaseStrategy`, `CaseTriageStage`, `Notifier`,
 `ReportIntakeStage`, `Reportable`, `Restrictable`, `ScopeResolver`,
 `StateTransitionEvent`, `Stateful`, `TransitionGuard`.
+
+Added in 1.1 (additive, optional): `Contracts\FiltersEvents` — a
+notifier may implement it to `subscribesTo()` specific events (X8).
 
 ## Facade methods (22)
 
@@ -74,3 +77,5 @@ Generic: `StateTransitioned`.
 ## Artisan commands
 
 `casework:expire-restrictions`, `casework:prune-audit`.
+
+Added in 1.1: `casework:make-reason` (bootstrap report reasons).

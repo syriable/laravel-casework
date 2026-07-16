@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Syriable\Casework\Concerns;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Syriable\Casework\Enforcement\Models\Restriction;
+use Syriable\Casework\Enforcement\Models\Warning;
 use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\RestrictionType;
 
@@ -17,28 +18,27 @@ use Syriable\Casework\Support\RestrictionType;
 trait InteractsWithRestrictions
 {
     /**
-     * Full restriction history (FR-409).
+     * Full restriction history (FR-409). Typed to the shipped model so
+     * the `active` scope resolves; overrides subclass it (X1).
      *
-     * @return MorphMany<Model, $this>
+     * @return MorphMany<Restriction, $this>
      */
     public function restrictions(): MorphMany
     {
+        /** @var MorphMany<Restriction, $this> */
         return $this->morphMany(ModelRegistry::classFor('restriction'), 'subject');
     }
 
     /**
      * Currently enforceable restrictions (state active AND not past
-     * expiry — the real-time rule, I-09).
+     * expiry — the real-time rule, I-09). Delegates to the model's
+     * `active` scope so the predicate lives in exactly one place.
      *
-     * @return MorphMany<Model, $this>
+     * @return MorphMany<Restriction, $this>
      */
     public function activeRestrictions(): MorphMany
     {
-        return $this->restrictions()
-            ->where('state', 'active')
-            ->where(function ($query): void {
-                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            });
+        return $this->restrictions()->active();
     }
 
     public function isRestricted(?string $type = null, ?string $scope = null): bool
@@ -62,20 +62,19 @@ trait InteractsWithRestrictions
     }
 
     /**
-     * @return MorphMany<Model, $this>
+     * @return MorphMany<Warning, $this>
      */
     public function warnings(): MorphMany
     {
+        /** @var MorphMany<Warning, $this> */
         return $this->morphMany(ModelRegistry::classFor('warning'), 'subject');
     }
 
     /**
-     * @return MorphMany<Model, $this>
+     * @return MorphMany<Warning, $this>
      */
     public function activeWarnings(): MorphMany
     {
-        return $this->warnings()->where(function ($query): void {
-            $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
-        });
+        return $this->warnings()->active();
     }
 }

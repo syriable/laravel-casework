@@ -32,6 +32,9 @@ class CaseFile extends Model implements Stateful
 
     use HasPrefixedTable;
 
+    // Written only through the package's audited actions; never bind
+    // request input to these models directly (ADR-0018). The state
+    // column is separately immutable (GuardsStateColumn, I-03).
     protected $guarded = [];
 
     protected function tableSuffix(): string

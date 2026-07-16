@@ -6,6 +6,7 @@ namespace Syriable\Casework\Reporting\Actions;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\DB;
 use Syriable\Casework\Audit\Recorder;
@@ -67,45 +68,105 @@ class FileReport
             new ReportIntake($subject, $by, $reason, $comment, $metadata),
         );
 
-        $report = DB::transaction(function () use ($subject, $by, $reason, $intake): Report {
-            $class = ModelRegistry::classFor('report');
+        // The dedupe key is the DB-level backstop for I-02 (Phase 18
+        // review): a unique index rejects a second open report for the
+        // same (subject, reporter, reason) tuple even when two requests
+        // race past the pre-check above. Null for system/anonymous
+        // origins and when duplicates are allowed — those carry no key,
+        // so the index never constrains them.
+        $dedupeKey = $this->dedupeKey($by, $subject, $reason);
 
-            /** @var Report $report */
-            $report = new $class([
-                'subject_type' => $subject->getMorphClass(),
-                'subject_id' => $subject->getKey(),
-                'reporter_type' => $by->actor?->getMorphClass(),
-                'reporter_id' => $by->actor?->getKey(),
-                'origin' => $by->origin,
-                'reason_id' => $reason->getKey(),
-                'comment' => $intake->comment,
-                'metadata' => $intake->metadata === [] ? null : $intake->metadata,
-            ]);
+        try {
+            $report = DB::transaction(function () use ($subject, $by, $reason, $intake, $dedupeKey): Report {
+                $class = ModelRegistry::classFor('report');
 
-            (new Workflow($this->workflow))->initialize($report, 'file', $by);
+                /** @var Report $report */
+                $report = new $class([
+                    'subject_type' => $subject->getMorphClass(),
+                    'subject_id' => $subject->getKey(),
+                    'reporter_type' => $by->actor?->getMorphClass(),
+                    'reporter_id' => $by->actor?->getKey(),
+                    'origin' => $by->origin,
+                    'reason_id' => $reason->getKey(),
+                    'comment' => $intake->comment,
+                    'metadata' => $intake->metadata === [] ? null : $intake->metadata,
+                    'dedupe_key' => $dedupeKey,
+                ]);
 
-            $report->save();
+                (new Workflow($this->workflow))->initialize($report, 'file', $by);
 
-            $this->recorder->record($by, 'report.filed', $report, [
-                'reason' => $reason->getAttribute('key'),
-            ]);
+                $report->save();
 
-            event(new ReportFiled($report, $by));
+                $this->recorder->record($by, 'report.filed', $report, [
+                    'reason' => $reason->getAttribute('key'),
+                ]);
 
-            // Auto-dismissal (X9): filed and dismissed both land in the
-            // audit trail, attributed to the System (FR-805).
-            if ($intake->shouldDismiss()) {
-                app(DismissReport::class)->execute($report, ActorRef::system());
+                event(new ReportFiled($report, $by));
+
+                // Auto-dismissal (X9): filed and dismissed both land in the
+                // audit trail, attributed to the System (FR-805).
+                if ($intake->shouldDismiss()) {
+                    app(DismissReport::class)->execute($report, ActorRef::system());
+
+                    return $report;
+                }
+
+                $this->applyCaseStrategy($report, $intake);
 
                 return $report;
+            });
+        } catch (QueryException $exception) {
+            // A concurrent filer won the race and inserted the same open
+            // tuple first; the unique index rejected this one. Translate
+            // it to the same exception the pre-check throws (I-02).
+            if ($by->actor !== null && $this->isUniqueViolation($exception)) {
+                throw DuplicateReport::for($by->actor, $subject, $reason);
             }
 
-            $this->applyCaseStrategy($report, $intake);
-
-            return $report;
-        });
+            throw $exception;
+        }
 
         return $report;
+    }
+
+    /**
+     * The value guarding invariant I-02 at the database layer. Present
+     * only for model reporters when duplicates are disallowed — exactly
+     * the case the pre-check covers — so the unique index and the
+     * pre-check agree on scope.
+     */
+    private function dedupeKey(ActorRef $by, Model $subject, Reason $reason): ?string
+    {
+        if ($by->actor === null || config('casework.reporting.allow_duplicates') === true) {
+            return null;
+        }
+
+        return hash('sha256', implode('|', [
+            $subject->getMorphClass(),
+            $this->stringifyKey($subject->getKey()),
+            $by->actor->getMorphClass(),
+            $this->stringifyKey($by->actor->getKey()),
+            $this->stringifyKey($reason->getKey()),
+        ]));
+    }
+
+    /**
+     * Model keys are scalar in every supported key strategy (bigint,
+     * UUID, ULID — ADR-0010); the guard keeps the fingerprint total.
+     */
+    private function stringifyKey(mixed $key): string
+    {
+        return is_scalar($key) ? (string) $key : '';
+    }
+
+    /**
+     * SQLSTATE 23000 (MySQL/SQLite integrity violation) or 23505
+     * (PostgreSQL unique_violation). The only unique index touched by a
+     * report insert is the dedupe key, so this is unambiguous here.
+     */
+    private function isUniqueViolation(QueryException $exception): bool
+    {
+        return in_array((string) $exception->getCode(), ['23000', '23505'], true);
     }
 
     private function runIntakePipeline(ReportIntake $intake): ReportIntake

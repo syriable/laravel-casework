@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Syriable\Casework\Contracts\Stateful;
 use Syriable\Casework\Database\Factories\RestrictionFactory;
 use Syriable\Casework\Enforcement\RestrictionState;
+use Syriable\Casework\Support\Concerns\ExpiresInRealTime;
 use Syriable\Casework\Support\Concerns\GuardsStateColumn;
 use Syriable\Casework\Support\Concerns\HasPrefixedTable;
 use Syriable\Casework\Support\ModelRegistry;
@@ -30,6 +31,7 @@ use Syriable\Casework\Support\Origin;
  */
 class Restriction extends Model implements Stateful
 {
+    use ExpiresInRealTime;
     use GuardsStateColumn;
 
     /** @use HasFactory<RestrictionFactory> */
@@ -37,6 +39,9 @@ class Restriction extends Model implements Stateful
 
     use HasPrefixedTable;
 
+    // Written only through the package's audited actions; never bind
+    // request input to these models directly (ADR-0018). The state
+    // column is separately immutable (GuardsStateColumn, I-03).
     protected $guarded = [];
 
     protected function casts(): array
@@ -100,16 +105,14 @@ class Restriction extends Model implements Stateful
     }
 
     /**
-     * The FR-405 hot path — resolves inside the composite index.
+     * The FR-405 hot path — state active AND not past expiry (I-09),
+     * resolved inside the composite hot-path index.
      *
      * @param  Builder<static>  $query
      */
     public function scopeActive(Builder $query): void
     {
-        $query->where('state', RestrictionState::Active->value)
-            ->where(function (Builder $expiry): void {
-                $expiry->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            });
+        $query->where('state', RestrictionState::Active->value)->notExpired();
     }
 
     /** @param Builder<static> $query */

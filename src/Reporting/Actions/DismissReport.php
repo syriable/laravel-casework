@@ -40,6 +40,11 @@ class DismissReport
         return DB::transaction(function () use ($report, $by, $from): Report {
             (new Workflow($this->workflow))->transition($report, 'dismiss', $by);
 
+            // Releasing the dedupe key frees the (subject, reporter,
+            // reason) slot for a future report — I-02 scopes uniqueness
+            // to open reports.
+            $report->update(['dedupe_key' => null]);
+
             $this->recorder->record($by, 'report.dismissed', $report);
 
             event(new ReportDismissed($report, $from, Workflow::stateOf($report), $by));

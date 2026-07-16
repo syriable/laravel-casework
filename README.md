@@ -43,6 +43,15 @@ composer require syriable/laravel-casework
 php artisan migrate
 ```
 
+Requires PHP 8.3+ and Laravel 12+.
+
+Reports classify against reasons-as-data, so create at least one reason
+before filing (idempotent, seeder-friendly):
+
+```bash
+php artisan casework:make-reason spam
+```
+
 Every config key has a working default. Publishing is optional:
 
 ```bash

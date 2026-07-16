@@ -33,7 +33,7 @@ it('rolls back cleanly', function (): void {
     // DDL inside RefreshDatabase's wrapper) and flakes; down()/up()
     // correctness is what this test owns.
     $files = glob(__DIR__.'/../../database/migrations/*.php') ?: [];
-    expect($files)->toHaveCount(10);
+    expect($files)->toHaveCount(12);
 
     foreach (array_reverse($files) as $file) {
         (require $file)->down();

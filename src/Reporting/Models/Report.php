@@ -29,7 +29,18 @@ class Report extends Model implements Stateful
 
     use HasPrefixedTable;
 
+    // Written only through the package's audited actions; never bind
+    // request input to these models directly (ADR-0018). The state
+    // column is separately immutable (GuardsStateColumn, I-03).
     protected $guarded = [];
+
+    /**
+     * The dedupe key is an internal I-02 fingerprint, never part of the
+     * model's public representation.
+     *
+     * @var list<string>
+     */
+    protected $hidden = ['dedupe_key'];
 
     protected function casts(): array
     {

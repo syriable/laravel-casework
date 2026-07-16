@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Syriable\Casework\Database\Factories\WarningFactory;
+use Syriable\Casework\Support\Concerns\ExpiresInRealTime;
 use Syriable\Casework\Support\Concerns\HasPrefixedTable;
 use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\Origin;
@@ -23,11 +24,15 @@ use Syriable\Casework\Support\Origin;
  */
 class Warning extends Model
 {
+    use ExpiresInRealTime;
+
     /** @use HasFactory<WarningFactory> */
     use HasFactory;
 
     use HasPrefixedTable;
 
+    // Written only through the package's audited actions; never bind
+    // request input to these models directly (ADR-0018).
     protected $guarded = [];
 
     protected function casts(): array
@@ -69,9 +74,7 @@ class Warning extends Model
     /** @param Builder<static> $query */
     public function scopeActive(Builder $query): void
     {
-        $query->where(function (Builder $expiry): void {
-            $expiry->whereNull('expires_at')->orWhere('expires_at', '>', now());
-        });
+        $query->notExpired();
     }
 
     /** @param Builder<static> $query */

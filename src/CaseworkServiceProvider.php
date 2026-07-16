@@ -13,6 +13,7 @@ use Syriable\Casework\Cases\CaseWorkflow;
 use Syriable\Casework\Cases\Events\CaseOpened;
 use Syriable\Casework\Cases\Listeners\RunTriagePipeline;
 use Syriable\Casework\Commands\ExpireRestrictionsCommand;
+use Syriable\Casework\Commands\MakeReasonCommand;
 use Syriable\Casework\Commands\PruneAuditCommand;
 use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
@@ -41,7 +42,8 @@ final class CaseworkServiceProvider extends PackageServiceProvider
             ->name('casework')
             ->hasConfigFile()
             ->hasCommand(PruneAuditCommand::class)
-            ->hasCommand(ExpireRestrictionsCommand::class);
+            ->hasCommand(ExpireRestrictionsCommand::class)
+            ->hasCommand(MakeReasonCommand::class);
     }
 
     /** @var list<class-string<WorkflowDefinition>> */
