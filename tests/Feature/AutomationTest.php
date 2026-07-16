@@ -18,6 +18,7 @@ use Syriable\Casework\Tests\Support\ForceCaseStage;
 use Syriable\Casework\Tests\Support\RecordingNotifier;
 use Syriable\Casework\Tests\Support\RefusesIntakeStage;
 use Syriable\Casework\Tests\Support\SecondNotifier;
+use Syriable\Casework\Tests\Support\SelectiveNotifier;
 use Syriable\Casework\Tests\Support\ShortCircuitStage;
 use Syriable\Casework\Tests\Support\SuppressCaseStage;
 use Syriable\Casework\Tests\Support\TagsMetadataStage;
@@ -158,4 +159,34 @@ it('runs triage stages after CaseOpened with full pipeline treatment (X10)', fun
     $entry = $this->assertAuditRecorded('case.escalated', $case);
 
     expect($entry->origin)->toBe(Origin::System);
+});
+
+it('skips notifiers that did not subscribe to an event (X8 filtering)', function (): void {
+    config()->set('casework.notifiers', [SelectiveNotifier::class]);
+    config()->set('casework.cases.strategy', 'always');
+
+    SelectiveNotifier::$received = [];
+    SelectiveNotifier::$instantiations = 0;
+
+    // One filing emits ReportFiled, CaseOpened, and ReportAttachedToCase;
+    // the notifier subscribes to ReportFiled only.
+    fileAutomatedReport();
+
+    expect(SelectiveNotifier::$received)->toBe([ReportFiled::class])
+        // Built once, for its single subscribed event — never for the
+        // events it filtered out.
+        ->and(SelectiveNotifier::$instantiations)->toBe(1);
+});
+
+it('still delivers every event to notifiers that do not filter', function (): void {
+    config()->set('casework.notifiers', [RecordingNotifier::class]);
+    config()->set('casework.cases.strategy', 'always');
+
+    RecordingNotifier::$received = [];
+
+    fileAutomatedReport();
+
+    // A plain Notifier keeps the original fan-out (BC).
+    expect(RecordingNotifier::$received)->toContain(RecordingNotifier::class.':'.ReportFiled::class)
+        ->and(RecordingNotifier::$received)->toContain(RecordingNotifier::class.':'.CaseOpened::class);
 });

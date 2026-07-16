@@ -43,9 +43,15 @@ class SubmitAppeal
         $this->guardAppealable($target);
         $this->authorize($by, 'submit', ModelRegistry::classFor('appeal'));
         $this->guardWindow($target);
-        $this->guardLimit($target);
 
         return DB::transaction(function () use ($target, $by, $statement): Appeal {
+            // The per-target limit (FR-503) is a count-then-insert check,
+            // so it must be serialized: a row lock on the appealed target
+            // makes concurrent submissions queue, and each then sees the
+            // committed count of the ones before it (Phase 18 review).
+            $this->lockTarget($target);
+            $this->guardLimit($target);
+
             $class = ModelRegistry::classFor('appeal');
 
             /** @var Appeal $appeal */
@@ -111,6 +117,21 @@ class SubmitAppeal
         if (now()->gt($createdAt->clone()->addDays($window))) {
             throw AppealWindowClosed::for($target, $window);
         }
+    }
+
+    /**
+     * Serialize concurrent submissions against the same target by taking
+     * a row lock on it. The target (a decision or restriction) always
+     * exists, so the lock holds even for the first appeal — closing the
+     * gap a lock on the (possibly empty) appeals set would leave. On
+     * SQLite this is a no-op, but SQLite already serializes writers.
+     */
+    private function lockTarget(Model $target): void
+    {
+        $target->newQuery()
+            ->whereKey($target->getKey())
+            ->lockForUpdate()
+            ->first();
     }
 
     /**

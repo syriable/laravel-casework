@@ -8,13 +8,13 @@ review live in the [extension specification](../extending.md).
 | # | Point | How |
 |---|---|---|
 | X1 | Model overrides | subclass + `casework.models.*` |
-| X2 | Custom reasons | `Reason::create` — data, not code |
+| X2 | Custom reasons | `casework:make-reason` / `Reason::create` — data, not code |
 | X3 | Custom outcomes | `casework.decisions.outcomes` |
 | X4 | Custom restriction types | `casework.enforcement.restriction_types` |
 | X5 | Workflow states/transitions | subclass the `WorkflowDefinition`, rebind |
 | X6 | Scope resolution | bind `Contracts\ScopeResolver` |
 | X7 | Case strategy | `casework.cases.strategy` class |
-| X8 | Notifiers | `casework.notifiers` — see [events](events.md) |
+| X8 | Notifiers | `casework.notifiers` (optionally `Contracts\FiltersEvents`) — see [events](events.md) |
 | X9/X10 | Intake/triage automation | `casework.pipelines.*` — see [automation](automation.md) |
 | X11 | Action replacement | container rebind |
 | X12 | Policy overrides | `Gate::policy` — see [authorization](authorization.md) |

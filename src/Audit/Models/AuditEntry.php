@@ -29,6 +29,9 @@ class AuditEntry extends Model
 
     public const UPDATED_AT = null;
 
+    // Written only through the audit Recorder; never bind request input
+    // to these models directly (ADR-0018). Entries are immutable after
+    // creation (PreventsMutation, I-04).
     protected $guarded = [];
 
     protected function casts(): array

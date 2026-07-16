@@ -37,9 +37,17 @@ class ResolveReport
 
             (new Workflow($this->workflow))->transition($report, 'resolve', $by);
 
+            // Releasing the dedupe key frees the (subject, reporter,
+            // reason) slot so the reporter may file again later — I-02
+            // scopes uniqueness to open reports. The decision link, if
+            // any, is written in the same update.
+            $attributes = ['dedupe_key' => null];
+
             if ($decision instanceof Decision) {
-                $report->update(['decision_id' => $decision->getKey()]);
+                $attributes['decision_id'] = $decision->getKey();
             }
+
+            $report->update($attributes);
 
             $this->recorder->record($by, 'report.resolved', $report, array_filter([
                 'decision_id' => $decision?->getKey(),

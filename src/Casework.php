@@ -191,26 +191,22 @@ final class Casework
 
     /**
      * The FR-405 hot path for non-trait contexts: one indexed query,
-     * honoring expiry in real time.
+     * honoring expiry in real time. Reuses the Restriction model scopes so
+     * the "active and not expired" predicate lives in exactly one place.
      */
     public function isRestricted(Model $subject, ?string $type = null, ?string $scope = null): bool
     {
+        /** @var class-string<Restriction> $class */
         $class = ModelRegistry::classFor('restriction');
 
-        $query = $class::query()
-            ->where('subject_type', $subject->getMorphClass())
-            ->where('subject_id', $subject->getKey())
-            ->where('state', 'active')
-            ->where(function ($expiry): void {
-                $expiry->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            });
+        $query = $class::query()->forSubject($subject)->active();
 
         if ($type !== null) {
-            $query->where('type', $type);
+            $query->ofType($type);
         }
 
         if ($scope !== null) {
-            $query->where('scope', $scope);
+            $query->inScope($scope);
         }
 
         return $query->exists();

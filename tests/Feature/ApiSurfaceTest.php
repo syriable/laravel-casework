@@ -38,6 +38,7 @@ it('freezes the contract surface', function (): void {
     expect(classesIn('Contracts', 'Contracts'))->toBe([
         'CaseStrategy',
         'CaseTriageStage',
+        'FiltersEvents',
         'Notifier',
         'ReportIntakeStage',
         'Reportable',

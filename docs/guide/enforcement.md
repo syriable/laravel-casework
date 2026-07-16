@@ -59,12 +59,23 @@ Casework::lift($restriction, by: $moderator, reason: 'Appeal upheld');
 ```
 
 Lifting requires a *currently* active restriction and records who lifted it
-and why. Schedule the expiry bookkeeping in your application:
+and why. Schedule the expiry bookkeeping in your application — the package
+registers no schedule itself (it stays UI-agnostic), so add it where you
+define scheduled tasks:
 
 ```php
-// routes/console.php or bootstrap/app.php scheduling
-Schedule::command('casework:expire-restrictions')->hourly();
+// routes/console.php (Laravel 11+) or app/Console/Kernel.php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('casework:expire-restrictions')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping();
 ```
+
+Cadence is a bookkeeping choice, never a correctness one: `isRestricted()`
+and `activeRestrictions()` already honor expiry in real time (I-09), so a
+missed run only delays the `RestrictionExpired` events and audit entries,
+never the enforcement itself.
 
 ## Warnings
 

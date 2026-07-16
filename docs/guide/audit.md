@@ -66,7 +66,12 @@ or configure a retention and schedule it:
 ```
 
 ```php
-Schedule::command('casework:prune-audit')->daily();
+// routes/console.php (Laravel 11+) or app/Console/Kernel.php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('casework:prune-audit')
+    ->daily()
+    ->withoutOverlapping();
 ```
 
 Without either, the command refuses to run. Pruning uses a bulk query

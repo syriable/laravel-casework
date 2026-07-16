@@ -1,6 +1,6 @@
 # Installation
 
-Requires PHP 8.4+ and Laravel 12+.
+Requires PHP 8.3+ and Laravel 12+.
 
 ```bash
 composer require syriable/laravel-casework
@@ -10,6 +10,41 @@ php artisan migrate
 That's it — the package loads its migrations itself, and every config
 key has a working default (the zero-config guarantee, FR-951): after
 `migrate`, the full report-to-appeal flow works.
+
+## Bootstrapping reasons
+
+Reports classify against **reasons-as-data** (domain model E2), so the
+one thing to set up before filing a report is at least one active
+reason. Create them with the shipped command:
+
+```bash
+php artisan casework:make-reason spam
+php artisan casework:make-reason hate_speech "Hate speech" --category=safety
+php artisan casework:make-reason legacy_reason --inactive
+```
+
+The command is **idempotent by key** — re-running updates the label,
+category, and active flag — so it is safe to call from a deployment
+script. For version-controlled seed data, call it from a seeder:
+
+```php
+// database/seeders/CaseworkReasonsSeeder.php
+public function run(): void
+{
+    foreach ([
+        'spam' => 'Spam',
+        'harassment' => 'Harassment',
+        'hate_speech' => 'Hate speech',
+    ] as $key => $label) {
+        $this->call('casework:make-reason', ['key' => $key, 'label' => $label]);
+    }
+}
+```
+
+Reasons are ordinary models (`Syriable\Casework\Reporting\Models\Reason`),
+so a factory or a hand-rolled seeder works too; the command is just the
+quickest path. Filing a report against an unknown or inactive key throws
+`UnknownReason`.
 
 ## Publishing (optional)
 
