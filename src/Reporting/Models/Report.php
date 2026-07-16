@@ -88,7 +88,7 @@ class Report extends Model implements Stateful
     }
 
     /**
-     * Set when the report was resolved by a decision (FR-305).
+     * Set when the report was resolved by a decision.
      *
      * @return BelongsTo<Model, $this>
      */

@@ -1,8 +1,7 @@
 # ADR-0004 — Domain-First Package Layout
 
-**Status:** Proposed (Gate G4)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 4 — Architecture
 
 ## Context
 
@@ -44,7 +43,7 @@ domain map just established and scatters each feature across six directories.
 - **+** Inner directories remain idiomatic; per-module `Models/` keeps Eloquent
   discovery, factories, and IDE ergonomics unchanged.
 - **−** Slightly deeper namespaces (`Casework\Enforcement\Actions\LiftRestriction`) —
-  accepted; applications interact mainly via traits, the facade, and contracts (Phase 5).
-- **−** Cross-module operations need explicit direction rules — codified in
-  [overview §2](../architecture/overview.md): owning module's action orchestrates, calls
-  other modules' actions, single transaction.
+  accepted; applications interact mainly via traits, the facade, and contracts.
+- **−** Cross-module operations need explicit direction rules: the owning
+  module's action orchestrates, calls other modules' actions, and
+  commits everything in a single transaction.

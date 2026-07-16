@@ -88,10 +88,13 @@ expect($entry->origin)->toBe(Origin::Model)
 - **Stages/notifiers**: list them in config inside the test
   (`config()->set('casework.pipelines.intake', [MyStage::class])`) and
   run the real operation — assert effects, audit, and events.
-- **Custom workflow states**: bind your definition, then assert your
-  custom transitions *and* that a shipped transition still works.
+- **Custom workflow transitions**: bind your definition, then assert
+  your custom transitions *and* that a shipped transition still works.
 - **Policies/ScopeResolver**: file/decide through the facade as a
   model actor and assert both the grant and the denial paths.
+- **Reputation policy**: enable tracking in config, file and dismiss
+  (or resolve) a report, and assert the reporter's `reputationScore()`
+  moved by the amount your policy returns.
 
 The package's own test suite (`tests/Feature`) doubles as a cookbook
 for all of the above.

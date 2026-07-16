@@ -7,7 +7,7 @@ namespace Syriable\Casework\Contracts;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Scoped moderation (FR-602): the application decides which scopes an
+ * Scoped moderation: the application decides which scopes an
  * actor may moderate and which scope a subject belongs to. Bind your own
  * implementation in the container to activate scoping (extension point X6).
  */

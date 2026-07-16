@@ -48,7 +48,7 @@ it('records system entries with a null payload column', function (): void {
 it('refuses to prune without an opt-in retention', function (): void {
     AuditEntry::factory()->create(['created_at' => now()->subYears(2)]);
 
-    // Default config: audit.prune_after_days is null (FR-705).
+    // Default config: audit.prune_after_days is null.
     $this->artisan('casework:prune-audit')
         ->expectsOutputToContain('opt-in')
         ->assertFailed();

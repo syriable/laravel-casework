@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 use Syriable\Casework\Support\ActorRef;
 
 /**
- * Dispatched only for application-defined custom transitions (ADR-0013
- * rule 4; event catalog §Generic). Core transitions carry their own
- * dedicated event classes, dispatched by their actions. After-commit
- * dispatch per ADR-0015.
+ * Dispatched only for application-defined custom transitions
+ * (ADR-0019). Core transitions carry their own dedicated event
+ * classes, dispatched by their actions. After-commit dispatch per
+ * ADR-0015.
  */
 final readonly class StateTransitioned implements ShouldDispatchAfterCommit
 {

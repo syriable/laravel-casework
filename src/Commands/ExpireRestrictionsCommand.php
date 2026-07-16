@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 use Syriable\Casework\Enforcement\Actions\ExpireRestrictions;
 
 /**
- * Formalize due restriction expirations (FR-404, FR-953). Schedule it
+ * Formalize due restriction expirations. Schedule it
  * in the application; enforcement correctness never depends on its
  * cadence (real-time rule, I-09).
  */

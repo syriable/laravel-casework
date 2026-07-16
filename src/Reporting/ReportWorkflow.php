@@ -8,7 +8,7 @@ use Syriable\Casework\States\TransitionDefinition;
 use Syriable\Casework\States\WorkflowDefinition;
 
 /**
- * The report lifecycle, verbatim from docs/workflows/report.md.
+ * The report lifecycle, verbatim from docs/guide/workflows.md.
  */
 class ReportWorkflow extends WorkflowDefinition
 {

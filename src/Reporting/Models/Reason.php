@@ -14,7 +14,7 @@ use Syriable\Casework\Support\ModelRegistry;
 
 /**
  * A configured report classification (domain model E2). Deactivation
- * never invalidates historical reports (FR-155, I-14).
+ * never invalidates historical reports.
  */
 class Reason extends Model
 {

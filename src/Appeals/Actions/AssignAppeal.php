@@ -18,9 +18,9 @@ use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
- * Assign an appeal to a reviewer (FR-505). A non-transition operation:
+ * Assign an appeal to a reviewer. A non-transition operation:
  * the appeal's state never moves — only the reviewer reference. The
- * independence guard (I-12) runs here and again at startReview, so a
+ * independence guard runs here and again at startReview, so a
  * post-assignment config flip cannot smuggle a dependent reviewer in.
  */
 class AssignAppeal

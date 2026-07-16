@@ -20,33 +20,30 @@ use Syriable\Casework\Tests\Support\RecordingGuard;
 use Syriable\Casework\Tests\Support\VetoGuard;
 
 /**
- * ADR-0013: bounded, add-only workflow extension — every rule violation
- * throws at boot, valid extensions get the full pipeline.
+ * ADR-0019: bounded, add-only workflow extension — a custom transition
+ * connects existing states only; every rule violation throws at boot,
+ * valid extensions get the full pipeline.
  */
-function legalWorkflow(): CaseWorkflow
+function reworkableCaseWorkflow(): CaseWorkflow
 {
     return new class extends CaseWorkflow
     {
-        protected function customStates(): array
-        {
-            return ['awaiting_legal'];
-        }
-
         protected function customTransitions(): array
         {
             return [
-                new TransitionDefinition('sendToLegal', [CaseState::UnderInvestigation->value], 'awaiting_legal'),
-                new TransitionDefinition('legalCleared', ['awaiting_legal'], CaseState::AwaitingDecision->value),
-                // Rule 6: custom states may declare core transitions from
-                // themselves, toward the same target.
-                new TransitionDefinition('decide', ['awaiting_legal'], CaseState::Decided->value),
+                // Send a case back to the open queue for a second look —
+                // reuses the existing `open` and `under_investigation`
+                // states; no new state is introduced.
+                new TransitionDefinition('returnToOpen', [CaseState::UnderInvestigation->value], CaseState::Open->value),
+                // Skip formal investigation for simple cases.
+                new TransitionDefinition('fastTrack', [CaseState::Open->value], CaseState::AwaitingDecision->value),
             ];
         }
     };
 }
 
-it('accepts a connected custom state and runs its full pipeline', function (): void {
-    $definition = legalWorkflow();
+it('accepts custom transitions between existing states and runs the full pipeline', function (): void {
+    $definition = reworkableCaseWorkflow();
     $definition->validate();
 
     app()->instance(CaseWorkflow::class, $definition);
@@ -56,20 +53,25 @@ it('accepts a connected custom state and runs its full pipeline', function (): v
     $case = CaseFile::factory()->create();
 
     $workflow->transition($case, 'startInvestigation', ActorRef::system());
-    $workflow->transition($case, 'sendToLegal', ActorRef::system());
+    $workflow->transition($case, 'returnToOpen', ActorRef::system());
 
-    expect($case->refresh()->getAttribute('state'))->toBe('awaiting_legal');
+    expect($case->refresh()->getAttribute('state'))->toBe(CaseState::Open->value);
 
-    // Core `decide` widened from the custom state still reaches `decided`.
+    $workflow->transition($case, 'fastTrack', ActorRef::system());
+
+    expect($case->refresh()->getAttribute('state'))->toBe(CaseState::AwaitingDecision->value);
+
+    // Core `decide` already accepts `awaiting_decision` — it keeps working
+    // after custom edges land.
     $workflow->transition($case, 'decide', ActorRef::system());
 
     expect($case->refresh()->getAttribute('state'))->toBe(CaseState::Decided->value);
 
-    // Rule 4: only the custom transitions dispatch the generic event.
+    // Only the custom transitions dispatch the generic event.
     Event::assertDispatchedTimes(StateTransitioned::class, 2);
-    Event::assertDispatched(StateTransitioned::class, fn (StateTransitioned $event) => $event->transition === 'sendToLegal'
-        && $event->from === CaseState::UnderInvestigation->value
-        && $event->to === 'awaiting_legal');
+    Event::assertDispatched(StateTransitioned::class, fn (StateTransitioned $event) => $event->transition === 'fastTrack'
+        && $event->from === CaseState::Open->value
+        && $event->to === CaseState::AwaitingDecision->value);
 });
 
 it('rejects rule violations at boot', function (Closure $definition, string $fragment): void {
@@ -92,56 +94,6 @@ it('rejects rule violations at boot', function (Closure $definition, string $fra
             }
         },
         'terminal state',
-    ],
-    'unreachable custom state' => [
-        fn () => new class extends CaseWorkflow
-        {
-            protected function customStates(): array
-            {
-                return ['limbo'];
-            }
-
-            protected function customTransitions(): array
-            {
-                return [new TransitionDefinition('leaveLimbo', ['limbo'], CaseState::Open->value)];
-            }
-        },
-        'unreachable',
-    ],
-    'trapped custom state' => [
-        fn () => new class extends CaseWorkflow
-        {
-            protected function customStates(): array
-            {
-                return ['trap'];
-            }
-
-            protected function customTransitions(): array
-            {
-                return [new TransitionDefinition('enterTrap', [CaseState::Open->value], 'trap')];
-            }
-        },
-        'no path back',
-    ],
-    'core name collision' => [
-        fn () => new class extends CaseWorkflow
-        {
-            protected function customStates(): array
-            {
-                return [CaseState::Open->value];
-            }
-        },
-        'collides',
-    ],
-    'overlong state name' => [
-        fn () => new class extends CaseWorkflow
-        {
-            protected function customStates(): array
-            {
-                return [str_repeat('a', 33)];
-            }
-        },
-        '32 characters',
     ],
     'retargeted core transition' => [
         fn () => new class extends CaseWorkflow
@@ -180,16 +132,11 @@ it('runs guards through the container and lets them veto', function (): void {
 
     $definition = new class extends CaseWorkflow
     {
-        protected function customStates(): array
-        {
-            return ['second_review'];
-        }
-
         protected function customTransitions(): array
         {
             return [
-                new TransitionDefinition('requestSecondReview', [CaseState::Open->value], 'second_review', [RecordingGuard::class]),
-                new TransitionDefinition('failSecondReview', ['second_review'], CaseState::Open->value, [VetoGuard::class]),
+                new TransitionDefinition('requestSecondReview', [CaseState::Open->value], CaseState::UnderInvestigation->value, [RecordingGuard::class]),
+                new TransitionDefinition('failSecondReview', [CaseState::UnderInvestigation->value], CaseState::Open->value, [VetoGuard::class]),
             ];
         }
     };
@@ -205,7 +152,7 @@ it('runs guards through the container and lets them veto', function (): void {
         ->and(RecordingGuard::$seen[0]->record->is($case))->toBeTrue()
         ->and(RecordingGuard::$seen[0]->by)->toBe($actor)
         ->and(RecordingGuard::$seen[0]->context)->toBe(['note' => 'double-check'])
-        ->and($case->refresh()->getAttribute('state'))->toBe('second_review');
+        ->and($case->refresh()->getAttribute('state'))->toBe(CaseState::UnderInvestigation->value);
 
     try {
         $workflow->transition($case, 'failSecondReview', $actor);
@@ -213,7 +160,7 @@ it('runs guards through the container and lets them veto', function (): void {
         $this->fail('Expected the veto guard to throw');
     } catch (CaseworkException) {
         // Vetoed before any write: state unchanged.
-        expect($case->refresh()->getAttribute('state'))->toBe('second_review');
+        expect($case->refresh()->getAttribute('state'))->toBe(CaseState::UnderInvestigation->value);
     }
 });
 

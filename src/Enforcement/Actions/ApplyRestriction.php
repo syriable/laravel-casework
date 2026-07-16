@@ -21,8 +21,8 @@ use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\RestrictionType;
 
 /**
- * Apply a restriction to a subject (FR-401–403). Direct or carried by a
- * decision (FR-303); optionally supersedes an active restriction in the
+ * Apply a restriction to a subject. Direct or carried by a
+ * decision; optionally supersedes an active restriction in the
  * same transaction (workflow: supersede).
  */
 class ApplyRestriction

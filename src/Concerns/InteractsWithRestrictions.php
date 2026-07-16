@@ -11,14 +11,14 @@ use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\RestrictionType;
 
 /**
- * The Restrictable relation surface (Phase 5 §1). isRestricted() is the
+ * The Restrictable relation surface. isRestricted() is the
  * FR-405 hot path: one query against the composite index, honoring
- * expires_at in real time (I-09) regardless of the expiry command.
+ * expires_at in real time regardless of the expiry command.
  */
 trait InteractsWithRestrictions
 {
     /**
-     * Full restriction history (FR-409). Typed to the shipped model so
+     * Full restriction history. Typed to the shipped model so
      * the `active` scope resolves; overrides subclass it (X1).
      *
      * @return MorphMany<Restriction, $this>

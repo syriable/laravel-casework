@@ -37,7 +37,7 @@ it('resolves model classes through the registry', function (): void {
 });
 
 it('applies the configured table prefix to every package model', function (): void {
-    // Phase 6 schema table names, resolved through the registry.
+    // Schema table names, resolved through the registry.
     $expected = [
         'report' => 'reports',
         'reason' => 'reasons',
@@ -49,6 +49,7 @@ it('applies the configured table prefix to every package model', function (): vo
         'warning' => 'warnings',
         'appeal' => 'appeals',
         'audit_entry' => 'audit_entries',
+        'reporter_reputation' => 'reporter_reputations',
     ];
 
     expect(ModelRegistry::keys())->toBe(array_keys($expected));

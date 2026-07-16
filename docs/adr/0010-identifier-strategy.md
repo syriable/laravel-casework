@@ -1,15 +1,14 @@
 # ADR-0010 — Identifier Strategy
 
-**Status:** Proposed (Gate G6)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 6 — Database Design
 
 ## Context
 
 NFR-12 requires one consistent identifier decision. Package tables reference each other
 (FKs) and reference *application* models polymorphically (ADR-0001). Applications key
 their models with bigints, UUIDs, or ULIDs — the package cannot know which, and the
-enforcement hot path (NFR-04) filters on morph id columns.
+enforcement hot path filters on morph id columns.
 
 ## Problem
 
@@ -34,13 +33,13 @@ between package tables. Every polymorphic `*_id` column (subject, reporter, acto
 assignee, issuer, appellant, reviewer, auditable) is `string(36)`, accepting bigint,
 UUID, and ULID application keys with zero configuration.
 
-Published migrations (FR-954) are the documented tightening point: applications with
+Published migrations are the documented tightening point: applications with
 all-bigint models MAY change morph ids to `unsignedBigInteger` before first run for
 maximum index density; the package works identically either way (Eloquent casts ids to
 string transparently in morph queries).
 
 Alternative 4 is rejected as permanent complexity for a one-time concern (over-
-engineering); Alternative 1 fails the zero-config requirement (FR-951) for a growing
+engineering); Alternative 1 fails the zero-config requirement for a growing
 share of Laravel apps; Alternative 2 buys nothing any requirement asks for.
 
 ## Consequences

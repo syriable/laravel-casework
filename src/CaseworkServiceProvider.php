@@ -19,9 +19,13 @@ use Syriable\Casework\Contracts\ScopeResolver;
 use Syriable\Casework\Enforcement\RestrictionWorkflow;
 use Syriable\Casework\Policies\AppealPolicy;
 use Syriable\Casework\Policies\CasePolicy;
+use Syriable\Casework\Policies\ReporterReputationPolicy;
 use Syriable\Casework\Policies\ReportPolicy;
 use Syriable\Casework\Policies\RestrictionPolicy;
 use Syriable\Casework\Policies\WarningPolicy;
+use Syriable\Casework\Reporting\Events\ReportDismissed;
+use Syriable\Casework\Reporting\Events\ReportResolved;
+use Syriable\Casework\Reporting\Listeners\AdjustReputationOnReportOutcome;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\WorkflowDefinition;
 use Syriable\Casework\Support\ConfigurationValidator;
@@ -32,7 +36,7 @@ use Syriable\Casework\Support\NullScopeResolver;
 /**
  * The package's only Laravel bootstrapping point (architecture §3).
  * Registers no routes, views, broadcast channels, or scheduled tasks —
- * the package is UI-agnostic by design (NFR-01).
+ * the package is UI-agnostic by design.
  */
 final class CaseworkServiceProvider extends PackageServiceProvider
 {
@@ -58,8 +62,9 @@ final class CaseworkServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(ScopeResolver::class, NullScopeResolver::class);
 
-        // Applications extend a lifecycle by rebinding its definition to a
-        // subclass (ADR-0013); validation below runs on whatever is bound.
+        // Applications extend a lifecycle's transitions by rebinding its
+        // definition to a subclass (ADR-0019); validation below runs on
+        // whatever is bound.
         foreach (self::WORKFLOWS as $workflow) {
             $this->app->singleton($workflow);
         }
@@ -77,21 +82,24 @@ final class CaseworkServiceProvider extends PackageServiceProvider
         }
 
         // Default policies register early; an application registering its
-        // own policy later overrides them (FR-601).
+        // own policy later overrides them.
         Gate::policy(ModelRegistry::classFor('report'), ReportPolicy::class);
         Gate::policy(ModelRegistry::classFor('case'), CasePolicy::class);
         Gate::policy(ModelRegistry::classFor('restriction'), RestrictionPolicy::class);
         Gate::policy(ModelRegistry::classFor('warning'), WarningPolicy::class);
         Gate::policy(ModelRegistry::classFor('appeal'), AppealPolicy::class);
+        Gate::policy(ModelRegistry::classFor('reporter_reputation'), ReporterReputationPolicy::class);
 
-        // The notifier loop (FR-803, X8): every package event, in listed
-        // order, after commit. The triage pipeline (FR-804, X10) runs
-        // when a case opens.
+        // The notifier loop (X8): every package event, in listed order,
+        // after commit. The triage pipeline (X10) runs when a case
+        // opens; the reputation listener (X14) runs on every report
+        // outcome but no-ops unless reputation tracking is enabled.
         Event::listen('Syriable\\Casework\\*', NotifierDispatcher::class);
         Event::listen(CaseOpened::class, RunTriagePipeline::class);
+        Event::listen([ReportDismissed::class, ReportResolved::class], AdjustReputationOnReportOutcome::class);
 
         // Migrations read the table prefix from config at run time, so the
-        // published copies honor the application's prefix (FR-954).
+        // published copies honor the application's prefix.
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         $this->publishes([

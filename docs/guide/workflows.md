@@ -1,6 +1,6 @@
 # Workflows
 
-Four state machines govern the domain (FR-902). States are stored as
+Four state machines govern the domain. States are stored as
 strings, transitions are verbs, and state columns are write-protected:
 only the workflow engine moves them — assigning `$report->state`
 directly throws. (Stateful package models implement the `Stateful`
@@ -86,11 +86,13 @@ Every transition attempt from a wrong state throws
 `InvalidTransition`, carrying the record, transition name, and
 from-state. Guards may veto an otherwise-legal transition by throwing.
 
-## Custom states and transitions
+## Custom transitions
 
 Applications extend a lifecycle by subclassing its
 `WorkflowDefinition` and rebinding it — add-only, boot-validated:
 shipped states, transitions, and terminals can never be removed or
-rewired, so package code keeps working (ADR-0013). The how-to lives in
-[extending](extending.md#workflow-extension-x5); the binding rules and
-transition tables in [docs/workflows/](../workflows/overview.md).
+rewired, so package code keeps working (ADR-0019). A custom transition
+connects two *existing* states (it cannot introduce a new one) and
+gets the full pipeline: authorization, guards, an audit entry, and the
+generic `StateTransitioned` event. The how-to lives in
+[extending](extending.md#workflow-extension-x5).

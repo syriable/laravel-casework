@@ -10,8 +10,8 @@ use Syriable\Casework\Enforcement\Models\Restriction;
 use Syriable\Casework\Support\ActorRef;
 
 /**
- * Audit key: restriction.expired. Bookkeeping for the real-time rule
- * (I-09): enforcement checks never wait for this transition.
+ * Audit key: restriction.expired. Bookkeeping for the real-time rule —
+ * enforcement checks never wait for this transition.
  */
 final readonly class RestrictionExpired implements ShouldDispatchAfterCommit, StateTransitionEvent
 {

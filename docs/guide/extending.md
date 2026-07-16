@@ -2,8 +2,7 @@
 
 Every extension point exists because a plausible application needs it;
 nothing else is open. The governing rule (ADR-0016): **config declares
-_what_, the container resolves _how_.** Rationale and the security
-review live in the [extension specification](../extending.md).
+_what_, the container resolves _how_.**
 
 | # | Point | How |
 |---|---|---|
@@ -11,7 +10,7 @@ review live in the [extension specification](../extending.md).
 | X2 | Custom reasons | `casework:make-reason` / `Reason::create` — data, not code |
 | X3 | Custom outcomes | `casework.decisions.outcomes` |
 | X4 | Custom restriction types | `casework.enforcement.restriction_types` |
-| X5 | Workflow states/transitions | subclass the `WorkflowDefinition`, rebind |
+| X5 | Workflow transitions | subclass the `WorkflowDefinition`, rebind |
 | X6 | Scope resolution | bind `Contracts\ScopeResolver` |
 | X7 | Case strategy | `casework.cases.strategy` class |
 | X8 | Notifiers | `casework.notifiers` (optionally `Contracts\FiltersEvents`) — see [events](events.md) |
@@ -19,6 +18,7 @@ review live in the [extension specification](../extending.md).
 | X11 | Action replacement | container rebind |
 | X12 | Policy overrides | `Gate::policy` — see [authorization](authorization.md) |
 | X13 | Guard replacement | container rebind |
+| X14 | Reputation scoring | `casework.reporting.reputation.policy` — see [reporting](reporting.md#reporter-reputation) |
 
 ## Model overrides (X1)
 
@@ -49,34 +49,38 @@ surface and invites drift between stored state and the machine.
 
 ## Workflow extension (X5)
 
-Add states and transitions — never remove or rewire shipped ones
-(ADR-0013: add-only, terminals closed, boot-validated):
+Add transitions *between existing states* — never remove or rewire
+shipped ones, and never introduce a new state (ADR-0019: add-only,
+terminals closed, boot-validated):
 
 ```php
-class LegalCaseWorkflow extends \Syriable\Casework\Cases\CaseWorkflow
+class ReopenableCaseWorkflow extends \Syriable\Casework\Cases\CaseWorkflow
 {
-    protected function customStates(): array
-    {
-        return ['awaiting_legal'];
-    }
-
     protected function customTransitions(): array
     {
         return [
-            new TransitionDefinition('sendToLegal', ['under_investigation'], 'awaiting_legal'),
-            new TransitionDefinition('legalCleared', ['awaiting_legal'], 'awaiting_decision'),
+            // A moderator can send a case back to the open queue for a
+            // second look, gated by a guard — no new state involved.
+            new TransitionDefinition(
+                'returnToOpen',
+                ['under_investigation'],
+                'open',
+                [RequiresSecondOpinion::class],
+            ),
         ];
     }
 }
 
 // AppServiceProvider::register()
-$this->app->singleton(CaseWorkflow::class, LegalCaseWorkflow::class);
+$this->app->singleton(CaseWorkflow::class, ReopenableCaseWorkflow::class);
 ```
 
-Custom transitions dispatch the generic `StateTransitioned` event;
-rule violations (orphan states, redirected core transitions, new
-terminals) throw `InvalidWorkflow` at boot. Full rules:
-[workflow docs](../workflows/overview.md).
+Custom transitions dispatch the generic `StateTransitioned` event and
+get the full pipeline (authorization, guards, audit entry); rule
+violations (undeclared endpoints, redirected core transitions, leaving
+a terminal) throw `InvalidWorkflow` at boot. A genuinely new named
+state (e.g. `awaiting_legal`) is not supported — model that as
+application-owned data (a note, a flag) instead.
 
 ## Action replacement (X11)
 
@@ -98,7 +102,7 @@ class VipAwareFileReport extends \Syriable\Casework\Reporting\Actions\FileReport
 $this->app->bind(FileReport::class, VipAwareFileReport::class);
 ```
 
-Contracts are the stable public API (NFR-08); concrete action names
+Contracts are the stable public API; concrete action names
 and constructor signatures are *replaceable but not stable* — call the
 parent rather than copying internals, and check the upgrade guide on
 majors.
@@ -113,6 +117,31 @@ touching the workflow:
 $this->app->bind(CustomAppealWindowGuard::class, RegionAwareWindowGuard::class);
 ```
 
+## Reputation scoring (X14)
+
+The rule deciding a reporter's score delta is a class, resolved from
+config — the same shape as case strategy (X7):
+
+```php
+class SeverityWeightedReputationPolicy implements \Syriable\Casework\Contracts\ReputationPolicy
+{
+    public function deltaForDismissal(Report $report): int
+    {
+        return -1;
+    }
+
+    public function deltaForResolution(Report $report, Decision $decision): int
+    {
+        return $decision->outcome === Outcome::UPHOLD ? 2 : 0;
+    }
+}
+
+// config/casework.php
+'reporting' => ['reputation' => ['policy' => SeverityWeightedReputationPolicy::class]],
+```
+
+Full walkthrough: [reporting](reporting.md#reporter-reputation).
+
 ## Deliberately closed
 
 Event classes (`final`), the workflow engine, value objects
@@ -120,6 +149,6 @@ Event classes (`final`), the workflow engine, value objects
 pending-operation builders (`PendingReport`, `PendingCase`,
 `PendingDecision`, `PendingRestriction`, `PendingWarning`,
 `PendingAppeal`, `PendingAppealResolution`), exceptions, and audit
-writing (the `Recorder` is not swappable — I-04 stays unforgeable
-from the extension surface). If one of these blocks you, open an
-issue instead of forking.
+writing (the `Recorder` is not swappable — audit integrity stays
+unforgeable from the extension surface). If one of these blocks you,
+open an issue instead of forking.

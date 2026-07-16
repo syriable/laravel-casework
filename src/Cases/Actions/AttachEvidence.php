@@ -17,7 +17,7 @@ use Syriable\Casework\Support\ModelRegistry;
 
 /**
  * Attach an immutable evidence record referencing a model and/or
- * structured data (FR-252, I-07). No file storage.
+ * structured data. No file storage.
  */
 class AttachEvidence
 {

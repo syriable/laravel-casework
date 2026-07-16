@@ -9,6 +9,7 @@ use Syriable\Casework\Contracts\CaseStrategy;
 use Syriable\Casework\Contracts\CaseTriageStage;
 use Syriable\Casework\Contracts\Notifier;
 use Syriable\Casework\Contracts\ReportIntakeStage;
+use Syriable\Casework\Contracts\ReputationPolicy;
 use Syriable\Casework\Exceptions\InvalidConfiguration;
 
 /**
@@ -21,6 +22,7 @@ final class ConfigurationValidator
     private const array MODEL_KEYS = [
         'report', 'reason', 'case', 'note', 'evidence',
         'decision', 'restriction', 'warning', 'appeal', 'audit_entry',
+        'reporter_reputation',
     ];
 
     private const array CASE_STRATEGIES = ['always', 'threshold', 'manual'];
@@ -36,6 +38,7 @@ final class ConfigurationValidator
         $this->validateModels($config);
         $this->validateBoolean($config, 'reporting.allow_duplicates');
         $this->validateBoolean($config, 'reporting.allow_anonymous');
+        $this->validateReputation($config);
         $this->validateCases($config);
         $this->validateOpenSet($config, 'decisions.outcomes', Outcome::shipped());
         $this->validateOpenSet($config, 'enforcement.restriction_types', RestrictionType::shipped());
@@ -104,6 +107,48 @@ final class ConfigurationValidator
                     "{$class} must extend {$default}",
                 );
             }
+        }
+    }
+
+    /** @param array<string, mixed> $config */
+    private function validateReputation(array $config): void
+    {
+        $this->validateBoolean($config, 'reporting.reputation.enabled');
+
+        foreach (['reporting.reputation.dismissed_delta', 'reporting.reputation.upheld_delta'] as $key) {
+            if (! is_int(Arr::get($config, $key))) {
+                throw InvalidConfiguration::forKey($key, 'must be an integer');
+            }
+        }
+
+        $threshold = Arr::get($config, 'reporting.reputation.block_threshold');
+
+        if ($threshold !== null && ! is_int($threshold)) {
+            throw InvalidConfiguration::forKey('reporting.reputation.block_threshold', 'must be null or an integer');
+        }
+
+        $rateLimit = Arr::get($config, 'reporting.reputation.rate_limit');
+
+        if ($rateLimit !== null && (! is_int($rateLimit) || $rateLimit < 1)) {
+            throw InvalidConfiguration::forKey('reporting.reputation.rate_limit', 'must be null or an integer >= 1');
+        }
+
+        $window = Arr::get($config, 'reporting.reputation.rate_limit_window_minutes');
+
+        if (! is_int($window) || $window < 1) {
+            throw InvalidConfiguration::forKey('reporting.reputation.rate_limit_window_minutes', 'must be an integer >= 1');
+        }
+
+        $policy = Arr::get($config, 'reporting.reputation.policy');
+
+        if (! is_string($policy) || $policy === '' || ! class_exists($policy)) {
+            $shown = is_string($policy) ? $policy : get_debug_type($policy);
+
+            throw InvalidConfiguration::forKey('reporting.reputation.policy', "class {$shown} does not exist");
+        }
+
+        if (! is_a($policy, ReputationPolicy::class, true)) {
+            throw InvalidConfiguration::forKey('reporting.reputation.policy', "{$policy} must implement ".ReputationPolicy::class);
         }
     }
 

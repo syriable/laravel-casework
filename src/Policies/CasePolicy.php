@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Syriable\Casework\Cases\Models\CaseFile;
 
 /**
- * Safe-by-default case authorization (FR-601): every moderation ability
+ * Safe-by-default case authorization: every moderation ability
  * is denied for model actors until the application registers its own
- * policy. System attribution bypasses policies (FR-805); scope
- * enforcement (FR-602) runs in the actions on top of any policy grant.
+ * policy. System attribution bypasses policies; scope
+ * enforcement runs in the actions on top of any policy grant.
  */
 final class CasePolicy
 {

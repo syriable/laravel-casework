@@ -26,10 +26,12 @@ use Syriable\Casework\Enforcement\Actions\LiftRestriction;
 use Syriable\Casework\Enforcement\Models\Restriction;
 use Syriable\Casework\Enforcement\PendingRestriction;
 use Syriable\Casework\Enforcement\PendingWarning;
+use Syriable\Casework\Reporting\Actions\AdjustReporterReputation;
 use Syriable\Casework\Reporting\Actions\AttachReportToCase;
 use Syriable\Casework\Reporting\Actions\DismissReport;
 use Syriable\Casework\Reporting\Actions\StartReportReview;
 use Syriable\Casework\Reporting\Models\Report;
+use Syriable\Casework\Reporting\Models\ReporterReputation;
 use Syriable\Casework\Reporting\PendingReport;
 use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\ModelRegistry;
@@ -42,7 +44,7 @@ use Syriable\Casework\Support\RestrictionType;
 final class Casework
 {
     /**
-     * Begin filing a report about a Reportable subject (Phase 5 §2).
+     * Begin filing a report about a Reportable subject.
      */
     public function report(Model $subject): PendingReport
     {
@@ -50,7 +52,7 @@ final class Casework
     }
 
     /**
-     * Dismiss an unattached report (FR-104).
+     * Dismiss an unattached report.
      */
     public function dismissReport(Report $report, Model|ActorRef $by): Report
     {
@@ -66,7 +68,7 @@ final class Casework
     }
 
     /**
-     * Begin opening a case about a subject (Phase 5 §3).
+     * Begin opening a case about a subject.
      */
     public function openCase(Model $subject): PendingCase
     {
@@ -117,7 +119,7 @@ final class Casework
     }
 
     /**
-     * Begin deciding a case (Phase 5 §4).
+     * Begin deciding a case.
      */
     public function decide(CaseFile $case): PendingDecision
     {
@@ -125,7 +127,7 @@ final class Casework
     }
 
     /**
-     * Begin restricting a subject (Phase 5 §5).
+     * Begin restricting a subject.
      */
     public function restrict(Model $subject, string $type): PendingRestriction
     {
@@ -134,7 +136,7 @@ final class Casework
 
     /**
      * Begin suspending a subject — a restriction of the shipped
-     * suspension type (FR-407).
+     * suspension type.
      */
     public function suspend(Model $subject): PendingRestriction
     {
@@ -142,7 +144,7 @@ final class Casework
     }
 
     /**
-     * Begin warning a subject (FR-406).
+     * Begin warning a subject.
      */
     public function warn(Model $subject): PendingWarning
     {
@@ -150,7 +152,7 @@ final class Casework
     }
 
     /**
-     * Lift an active restriction early (FR-408).
+     * Lift an active restriction early.
      */
     public function lift(Restriction $restriction, Model|ActorRef $by, string $reason): Restriction
     {
@@ -158,7 +160,7 @@ final class Casework
     }
 
     /**
-     * Begin appealing a decision or restriction (Phase 5 §6, FR-501).
+     * Begin appealing a decision or restriction.
      */
     public function appeal(Model $decisionOrRestriction): PendingAppeal
     {
@@ -166,7 +168,7 @@ final class Casework
     }
 
     /**
-     * Assign an appeal to a reviewer (FR-505).
+     * Assign an appeal to a reviewer.
      */
     public function assignAppeal(Appeal $appeal, Model $to, Model|ActorRef $by): Appeal
     {
@@ -182,7 +184,7 @@ final class Casework
     }
 
     /**
-     * Begin resolving an appeal — uphold, overturn, or reject (FR-502).
+     * Begin resolving an appeal — uphold, overturn, or reject.
      */
     public function resolveAppeal(Appeal $appeal): PendingAppealResolution
     {
@@ -210,6 +212,34 @@ final class Casework
         }
 
         return $query->exists();
+    }
+
+    /**
+     * Manually adjust a reporter's reputation score (extension point
+     * X14) — for moderator-initiated corrections outside the automatic
+     * dismiss/uphold pipeline. Fully audited like any other operation.
+     */
+    public function adjustReputation(Model $reporter, int $delta, string $reason, Model|ActorRef $by): ReporterReputation
+    {
+        return app(AdjustReporterReputation::class)->execute($reporter, $delta, $reason, $this->actor($by));
+    }
+
+    /**
+     * The reputation hot path for non-trait contexts: true only when
+     * config('casework.reporting.reputation.block_threshold') is set
+     * and the reporter's score is at or below it.
+     */
+    public function isReporterBlocked(Model $reporter): bool
+    {
+        /** @var class-string<ReporterReputation> $class */
+        $class = ModelRegistry::classFor('reporter_reputation');
+
+        $reputation = $class::query()
+            ->where('reporter_type', $reporter->getMorphClass())
+            ->where('reporter_id', $reporter->getKey())
+            ->first();
+
+        return $reputation instanceof ReporterReputation && $reputation->isBlocked();
     }
 
     private function actor(Model|ActorRef $by): ActorRef

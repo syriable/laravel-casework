@@ -14,7 +14,7 @@ use Syriable\Casework\Support\Concerns\AuthorizesActions;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * Attach an immutable, authored investigation note (FR-251, I-07).
+ * Attach an immutable, authored investigation note.
  */
 class AddNote
 {

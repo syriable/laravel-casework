@@ -1,14 +1,13 @@
 # ADR-0003 — Immutability Enforcement Strategy
 
-**Status:** Proposed (Gate G3)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 3 — Domain Modeling
 
 ## Context
 
-Decisions (FR-304), investigation notes and evidence (FR-254), and audit entries (FR-703)
+Decisions, investigation notes and evidence, and audit entries
 are immutable: corrections and reversals are new records referencing the originals. The
-package supports MySQL, PostgreSQL, MariaDB, and SQLite (NFR-03), and must remain a
+package supports MySQL, PostgreSQL, MariaDB, and SQLite, and must remain a
 plain Laravel package (no framework, no DBA requirements).
 
 ## Problem
@@ -32,7 +31,7 @@ Case, Restriction, Appeal) are *not* immutable, but their `state` may change **o
 through transitions (invariant I-03) — direct state assignment also throws.
 
 Database triggers are rejected: not portable across the four supported databases without
-per-vendor code (NFR-03), invisible to application developers, and hostile to testing.
+per-vendor code, invisible to application developers, and hostile to testing.
 
 ## Consequences
 
@@ -42,5 +41,5 @@ per-vendor code (NFR-03), invisible to application developers, and hostile to te
 - **−** Not tamper-proof at the SQL layer: raw queries or DB consoles can still mutate
   rows. Accepted — database-level hardening is the application/DBA's domain; the
   documentation MUST state this boundary explicitly.
-- Opt-in audit pruning (FR-705) is the single documented exception and operates via a
+- Opt-in audit pruning is the single documented exception and operates via a
   dedicated command, never via model APIs.

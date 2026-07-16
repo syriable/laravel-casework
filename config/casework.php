@@ -11,15 +11,17 @@ use Syriable\Casework\Enforcement\Models\Restriction;
 use Syriable\Casework\Enforcement\Models\Warning;
 use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Reporting\Models\Report;
+use Syriable\Casework\Reporting\Models\ReporterReputation;
+use Syriable\Casework\Reporting\Reputation\DefaultReputationPolicy;
 
 // Laravel Trust & Safety configuration. Every key is boot-validated:
 // invalid values throw Syriable\Casework\Exceptions\InvalidConfiguration
-// with the offending key. Full reference: docs/configuration.md.
+// with the offending key. Full reference: docs/guide/configuration.md.
 return [
 
     /*
      * Table prefix for all package tables. Applied at migration publish
-     * and at runtime model resolution. (FR-952, FR-954)
+     * and at runtime model resolution.
      */
     'table_prefix' => 'casework_',
 
@@ -38,24 +40,69 @@ return [
         'warning' => Warning::class,
         'appeal' => Appeal::class,
         'audit_entry' => AuditEntry::class,
+        'reporter_reputation' => ReporterReputation::class,
     ],
 
     'reporting' => [
         /*
          * Reject a report when the same reporter already has an open
-         * report on the same subject for the same reason. (FR-105)
+         * report on the same subject for the same reason.
          */
         'allow_duplicates' => false,
 
         /*
-         * Permit reports with origin "anonymous". (FR-103)
+         * Permit reports with origin "anonymous".
          */
         'allow_anonymous' => true,
+
+        /*
+         * Reporter reputation and rate limiting (extension point X14).
+         * Off by default — enabling it does not by itself block or
+         * limit anyone; see block_threshold and rate_limit below.
+         */
+        'reputation' => [
+            /*
+             * When true, a reporter's score adjusts whenever one of
+             * their reports is dismissed or resolved by a decision.
+             */
+            'enabled' => false,
+
+            /*
+             * Score delta applied when a report is dismissed (found
+             * unfounded) — used by the shipped DefaultReputationPolicy.
+             */
+            'dismissed_delta' => -1,
+
+            /*
+             * Score delta applied when a report is resolved by an
+             * upheld or escalated decision.
+             */
+            'upheld_delta' => 1,
+
+            /*
+             * A reporter at or below this score cannot file new
+             * reports; null = tracking only, nobody is ever blocked.
+             */
+            'block_threshold' => null,
+
+            /*
+             * Reports permitted per reporter within
+             * rate_limit_window_minutes; null = no rate limiting.
+             */
+            'rate_limit' => null,
+            'rate_limit_window_minutes' => 60,
+
+            /*
+             * The class deciding score deltas. Must implement
+             * Contracts\ReputationPolicy.
+             */
+            'policy' => DefaultReputationPolicy::class,
+        ],
     ],
 
     'cases' => [
         /*
-         * When reports become or join cases (FR-205):
+         * When reports become or join cases:
          * 'always' | 'threshold' | 'manual' | a CaseStrategy class name.
          */
         'strategy' => 'threshold',
@@ -67,7 +114,7 @@ return [
         'threshold' => 3,
 
         /*
-         * Ordered priority vocabulary and the default for new cases. (FR-204)
+         * Ordered priority vocabulary and the default for new cases.
          */
         'priorities' => ['low', 'normal', 'high', 'urgent'],
         'default_priority' => 'normal',
@@ -75,33 +122,33 @@ return [
 
     'decisions' => [
         /*
-         * Additional outcome keys beyond dismiss / uphold / escalate. (FR-302)
+         * Additional outcome keys beyond dismiss / uphold / escalate.
          */
         'outcomes' => [],
     ],
 
     'enforcement' => [
         /*
-         * Additional restriction types beyond 'suspension'. (FR-402, FR-407)
+         * Additional restriction types beyond 'suspension'.
          */
         'restriction_types' => [],
     ],
 
     'appeals' => [
         /*
-         * Appeals permitted per decision/restriction. (FR-503)
+         * Appeals permitted per decision/restriction.
          */
         'limit_per_target' => 1,
 
         /*
          * Days after the decision/restriction during which an appeal may
-         * be submitted; null = no window. (FR-506)
+         * be submitted; null = no window.
          */
         'window_days' => 30,
 
         /*
          * The appeal reviewer must differ from the original decider or
-         * issuer. (FR-505)
+         * issuer.
          */
         'require_independent_reviewer' => true,
     ],
@@ -109,25 +156,25 @@ return [
     'authorization' => [
         /*
          * Actors cannot decide cases or review appeals concerning
-         * themselves. (FR-604)
+         * themselves.
          */
         'prevent_self_moderation' => true,
     ],
 
     /*
      * Notifier classes invoked, in order, for every domain event after
-     * its transaction commits. Must implement Contracts\Notifier. (FR-803)
+     * its transaction commits. Must implement Contracts\Notifier.
      */
     'notifiers' => [],
 
     'pipelines' => [
         /*
-         * ReportIntakeStage classes, in order. (FR-804)
+         * ReportIntakeStage classes, in order.
          */
         'intake' => [],
 
         /*
-         * CaseTriageStage classes, in order. (FR-804)
+         * CaseTriageStage classes, in order.
          */
         'triage' => [],
     ],
@@ -135,7 +182,7 @@ return [
     'audit' => [
         /*
          * Retention in days for casework:prune-audit; null means the
-         * command refuses to run — pruning is opt-in. (FR-705)
+         * command refuses to run — pruning is opt-in.
          */
         'prune_after_days' => null,
     ],

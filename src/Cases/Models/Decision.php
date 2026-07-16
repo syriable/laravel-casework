@@ -66,7 +66,7 @@ class Decision extends Model
     }
 
     /**
-     * Enforcement applied with this decision (FR-303).
+     * Enforcement applied with this decision.
      *
      * @return HasMany<Model, $this>
      */

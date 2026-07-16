@@ -45,7 +45,7 @@ class SubmitAppeal
         $this->guardWindow($target);
 
         return DB::transaction(function () use ($target, $by, $statement): Appeal {
-            // The per-target limit (FR-503) is a count-then-insert check,
+            // The per-target limit is a count-then-insert check,
             // so it must be serialized: a row lock on the appealed target
             // makes concurrent submissions queue, and each then sees the
             // committed count of the ones before it (Phase 18 review).
@@ -80,7 +80,7 @@ class SubmitAppeal
     }
 
     /**
-     * Only decisions and restrictions are appealable (FR-501).
+     * Only decisions and restrictions are appealable.
      */
     private function guardAppealable(Model $target): void
     {

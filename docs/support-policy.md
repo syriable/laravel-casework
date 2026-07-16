@@ -13,7 +13,7 @@
   public API. Every such change carries a superseding ADR and an
   `UPGRADE.md` section.
 
-## What is public API (NFR-08)
+## What is public API
 
 The frozen surface in `docs/api/frozen-api-1.0.md`: contracts, facade
 operations, event classes, exceptions, the participation traits, value

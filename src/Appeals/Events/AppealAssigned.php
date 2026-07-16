@@ -10,7 +10,7 @@ use Syriable\Casework\Appeals\Models\Appeal;
 use Syriable\Casework\Support\ActorRef;
 
 /**
- * Audit key: appeal.assigned. A non-transition operation (FR-505) —
+ * Audit key: appeal.assigned. A non-transition operation —
  * assignment never moves the appeal's state.
  */
 final readonly class AppealAssigned implements ShouldDispatchAfterCommit

@@ -15,10 +15,13 @@ use Syriable\Casework\Cases\Strategies\ManualStrategy;
 use Syriable\Casework\Cases\Strategies\ThresholdStrategy;
 use Syriable\Casework\Contracts\CaseStrategy;
 use Syriable\Casework\Exceptions\DuplicateReport;
+use Syriable\Casework\Exceptions\ReporterBlocked;
+use Syriable\Casework\Exceptions\ReportRateLimited;
 use Syriable\Casework\Exceptions\UnknownReason;
 use Syriable\Casework\Reporting\Events\ReportFiled;
 use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Reporting\Models\Report;
+use Syriable\Casework\Reporting\Models\ReporterReputation;
 use Syriable\Casework\Reporting\ReportIntake;
 use Syriable\Casework\Reporting\ReportWorkflow;
 use Syriable\Casework\States\Workflow;
@@ -27,7 +30,7 @@ use Syriable\Casework\Support\Concerns\AuthorizesActions;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * File a report (FR-101–108). Pipeline: authorize → guard → transact →
+ * File a report. Pipeline: authorize → guard → transact →
  * transition → audit → events (ADR-0005; events after commit, ADR-0015).
  */
 class FileReport
@@ -60,6 +63,7 @@ class FileReport
         $reason = $this->resolveReason($reason);
 
         $this->guardAgainstDuplicates($by, $subject, $reason);
+        $this->guardReputationAndRateLimit($by);
 
         // Intake automation (FR-804, X9): after guards, before
         // persistence. A stage throwing here refuses intake — nothing
@@ -104,7 +108,7 @@ class FileReport
                 event(new ReportFiled($report, $by));
 
                 // Auto-dismissal (X9): filed and dismissed both land in the
-                // audit trail, attributed to the System (FR-805).
+                // audit trail, attributed to the System.
                 if ($intake->shouldDismiss()) {
                     app(DismissReport::class)->execute($report, ActorRef::system());
 
@@ -118,7 +122,7 @@ class FileReport
         } catch (QueryException $exception) {
             // A concurrent filer won the race and inserted the same open
             // tuple first; the unique index rejected this one. Translate
-            // it to the same exception the pre-check throws (I-02).
+            // it to the same exception the pre-check throws.
             if ($by->actor !== null && $this->isUniqueViolation($exception)) {
                 throw DuplicateReport::for($by->actor, $subject, $reason);
             }
@@ -273,6 +277,54 @@ class FileReport
 
         if ($duplicate) {
             throw DuplicateReport::for($by->actor, $subject, $reason);
+        }
+    }
+
+    /**
+     * Reporter reputation and rate limiting (extension point X14),
+     * opt-in via config('casework.reporting.reputation.*'). Applies
+     * only to model reporters — system and anonymous origins carry no
+     * identity to score or limit, exactly like the duplicate guard.
+     */
+    private function guardReputationAndRateLimit(ActorRef $by): void
+    {
+        if ($by->actor === null) {
+            return;
+        }
+
+        $threshold = config('casework.reporting.reputation.block_threshold');
+
+        if (is_int($threshold)) {
+            $class = ModelRegistry::classFor('reporter_reputation');
+
+            /** @var ReporterReputation|null $reputation */
+            $reputation = $class::query()
+                ->where('reporter_type', $by->actor->getMorphClass())
+                ->where('reporter_id', $by->actor->getKey())
+                ->first();
+
+            if ($reputation !== null && $reputation->isBlocked()) {
+                throw ReporterBlocked::for($by->actor, $reputation->score);
+            }
+        }
+
+        $limit = config('casework.reporting.reputation.rate_limit');
+
+        if (is_int($limit)) {
+            $windowMinutes = config('casework.reporting.reputation.rate_limit_window_minutes');
+            $windowMinutes = is_int($windowMinutes) ? $windowMinutes : 60;
+
+            $reportClass = ModelRegistry::classFor('report');
+
+            $recent = $reportClass::query()
+                ->where('reporter_type', $by->actor->getMorphClass())
+                ->where('reporter_id', $by->actor->getKey())
+                ->where('created_at', '>=', now()->subMinutes($windowMinutes))
+                ->count();
+
+            if ($recent >= $limit) {
+                throw ReportRateLimited::for($by->actor, $limit, $windowMinutes);
+            }
         }
     }
 }

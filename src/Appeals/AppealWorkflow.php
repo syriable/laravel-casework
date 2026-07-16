@@ -8,7 +8,7 @@ use Syriable\Casework\States\TransitionDefinition;
 use Syriable\Casework\States\WorkflowDefinition;
 
 /**
- * The appeal lifecycle, verbatim from docs/workflows/appeal.md.
+ * The appeal lifecycle, verbatim from docs/guide/workflows.md.
  */
 class AppealWorkflow extends WorkflowDefinition
 {

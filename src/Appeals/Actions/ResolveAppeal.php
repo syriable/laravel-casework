@@ -24,8 +24,8 @@ use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\Outcome;
 
 /**
- * Resolve an appeal: uphold, overturn, or reject (FR-502/504). Overturn
- * is atomic (I-13): lifting the associated active restrictions —
+ * Resolve an appeal: uphold, overturn, or reject. Overturn
+ * is atomic: lifting the associated active restrictions —
  * through the restriction machine's own lift, no special-case writes —
  * and recording a superseding decision commit with the appeal
  * transition or not at all. The superseding decision carries outcome

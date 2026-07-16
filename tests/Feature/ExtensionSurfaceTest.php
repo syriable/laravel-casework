@@ -64,21 +64,16 @@ it('uses rebound action classes (X11)', function (): void {
 it('resolves transition guards through the container, so one guard is rebindable (X13)', function (): void {
     $definition = new class extends CaseWorkflow
     {
-        protected function customStates(): array
-        {
-            return ['awaiting_legal'];
-        }
-
         protected function customTransitions(): array
         {
             return [
                 new TransitionDefinition(
                     'sendToLegal',
                     [CaseState::Open->value],
-                    'awaiting_legal',
+                    CaseState::UnderInvestigation->value,
                     [RecordingGuard::class],
                 ),
-                new TransitionDefinition('legalCleared', ['awaiting_legal'], CaseState::Open->value),
+                new TransitionDefinition('legalCleared', [CaseState::UnderInvestigation->value], CaseState::Open->value),
             ];
         }
     };
@@ -119,7 +114,7 @@ it('enforces a bound ScopeResolver on scoped operations (X6)', function (): void
     $moderator = Post::factory()->create();
     $case = CaseFile::factory()->create();
 
-    // Policy grants everything, yet the scope boundary denies (FR-602).
+    // Policy grants everything, yet the scope boundary denies.
     expect(fn () => Casework::escalateCase($case, $moderator, 'urgent'))
         ->toThrow(AuthorizationException::class, 'scopes');
 });

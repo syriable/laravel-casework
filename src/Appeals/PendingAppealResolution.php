@@ -49,7 +49,7 @@ final class PendingAppealResolution
 
     /**
      * Reverse the original outcome: lifts associated active restrictions
-     * and records a superseding decision, atomically (I-13, FR-504).
+     * and records a superseding decision, atomically.
      */
     public function overturn(?string $rationale = null): Appeal
     {

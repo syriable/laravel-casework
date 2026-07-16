@@ -7,7 +7,7 @@ namespace Syriable\Casework\Policies;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Safe-by-default warning authorization (FR-601).
+ * Safe-by-default warning authorization.
  */
 final class WarningPolicy
 {

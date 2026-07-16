@@ -4,12 +4,22 @@ All notable changes to `laravel-casework` will be documented in this file.
 
 ## Unreleased
 
-Post-1.0 hardening (Phase 18). All changes are backward compatible; the
-only upgrade action is `php artisan migrate` for the two additive
-migrations. See [ADR-0018](docs/adr/0018-mass-assignment-and-race-safety.md).
+This release carries one breaking change (workflow extension is now
+transitions-only — see **Removed** and `UPGRADE.md`) alongside post-1.0
+hardening and the new reporter reputation system. Upgrade actions:
+`php artisan migrate` for the additive migrations, and read
+`UPGRADE.md` if your application subclasses a `WorkflowDefinition` and
+overrides `customStates()`.
 
 ### Added
 
+- **Reporter reputation and rate limiting** (extension point X14, ADR-0020):
+  opt-in per-reporter scoring that decreases on dismissed reports and
+  increases on upheld/escalated ones, an optional score threshold that
+  blocks further reporting, and an optional per-reporter rate limit —
+  all gated by config, all audited, and the scoring rule itself is
+  swappable via `Contracts\ReputationPolicy`. See the
+  [reporting guide](docs/guide/reporting.md#reporter-reputation).
 - `casework:make-reason` command to bootstrap report reasons from the
   console or a seeder (idempotent by key). See the
   [installation guide](docs/guide/installation.md#bootstrapping-reasons).
@@ -17,16 +27,16 @@ migrations. See [ADR-0018](docs/adr/0018-mass-assignment-and-race-safety.md).
   that lists the events it `subscribesTo()` is only resolved and invoked
   for those events, instead of for every catalog event.
 - `Support\Concerns\ExpiresInRealTime`: a single `notExpired` scope that
-  now backs every "active and not past expiry" query (I-09).
+  now backs every "active and not past expiry" query.
 - Official scheduling example for `casework:expire-restrictions` and
   `casework:prune-audit` (docs/guide/enforcement.md, docs/guide/audit.md).
 
 ### Changed
 
-- **Race-safe invariants.** The duplicate-report guard (I-02) is now
-  backed by a nullable `dedupe_key` unique index, and the appeal-limit
-  guard (FR-503) by a row lock on the appealed target — both invariants
-  now hold under concurrency, not only in the single-request case.
+- **Race-safe invariants.** The duplicate-report guard is now backed by
+  a nullable `dedupe_key` unique index, and the appeal-limit guard by a
+  row lock on the appealed target — both invariants now hold under
+  concurrency, not only in the single-request case.
 - The restriction hot-path index is reordered to
   `(subject_type, subject_id, state, expires_at, type)` so the type-less
   `isRestricted()` and `activeRestrictions()` are fully index-served.
@@ -35,6 +45,20 @@ migrations. See [ADR-0018](docs/adr/0018-mass-assignment-and-race-safety.md).
   `minimum-stability` is `stable`.
 - Package models document their `$guarded = []` posture (ADR-0018) and
   hide the internal `dedupe_key` from serialization.
+- Repository housekeeping: the internal design-process documents (the
+  phase-numbered specifications superseded by `docs/guide/` and
+  `docs/adr/`) and the FR-traceability CI check tied to them are
+  removed; app-oriented dev dependencies (Debugbar, Sail, Boost, Pao)
+  are dropped from `require-dev` — none of this affects the package's
+  runtime or public API.
+
+### Removed
+
+- **Breaking:** `WorkflowDefinition::customStates()` — application
+  workflow extension is now transitions-only between existing states;
+  introducing a genuinely new named state is no longer supported. See
+  [ADR-0019](docs/adr/0019-narrow-workflow-extension-to-transitions.md)
+  and `UPGRADE.md`.
 
 ## 1.0.0 - 2026-07-15
 

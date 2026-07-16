@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Syriable\Casework\Enforcement\Models\Restriction;
 
 /**
- * Safe-by-default enforcement authorization (FR-601): denied for model
+ * Safe-by-default enforcement authorization: denied for model
  * actors until the application registers its own policy. System
- * attribution bypasses policies (FR-805).
+ * attribution bypasses policies.
  */
 final class RestrictionPolicy
 {

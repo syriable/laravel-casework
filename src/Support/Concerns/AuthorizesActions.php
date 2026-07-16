@@ -13,7 +13,7 @@ use Syriable\Casework\Support\ActorRef;
 /**
  * The authorize step of the action pipeline (ADR-0005, FR-601): model
  * actors pass through Gate policies; System attribution acts with
- * system authority (FR-805) and anonymous origins are authorized by
+ * system authority and anonymous origins are authorized by
  * the specific action's own rules.
  */
 trait AuthorizesActions
@@ -31,7 +31,7 @@ trait AuthorizesActions
     }
 
     /**
-     * Policy check plus scope enforcement (FR-602): when the resolver
+     * Policy check plus scope enforcement: when the resolver
      * scopes the actor and the subject belongs to a scope outside that
      * set, the operation is denied regardless of policy grants.
      *

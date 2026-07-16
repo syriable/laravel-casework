@@ -47,7 +47,7 @@ class Appeal extends Model implements Stateful
     }
 
     /**
-     * A Decision or a Restriction (FR-501).
+     * A Decision or a Restriction.
      *
      * @return MorphTo<Model, $this>
      */
@@ -69,7 +69,7 @@ class Appeal extends Model implements Stateful
     }
 
     /**
-     * Set on overturn (FR-504).
+     * Set on overturn.
      *
      * @return BelongsTo<Model, $this>
      */

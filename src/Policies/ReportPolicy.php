@@ -12,7 +12,7 @@ use Syriable\Casework\Reporting\Models\Report;
  * any authenticated model may file; moderation abilities are denied
  * until the application registers its own policy (which overrides this
  * one — the package registers defaults only when none exist). System
- * attribution bypasses policies by design (FR-805).
+ * attribution bypasses policies by design.
  */
 final class ReportPolicy
 {

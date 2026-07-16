@@ -15,7 +15,7 @@ use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
- * Change a case's priority (FR-204). A recorded, evented operation that
+ * Change a case's priority. A recorded, evented operation that
  * does not change lifecycle state (workflow doc).
  */
 class EscalateCase

@@ -19,7 +19,7 @@ use Syriable\Casework\Support\ModelRegistry;
 final class Recorder
 {
     /**
-     * Append one audit entry (FR-701/702). Action keys are the
+     * Append one audit entry. Action keys are the
      * dot-namespaced values fixed in the event catalog.
      *
      * @param  array<string, mixed>  $payload

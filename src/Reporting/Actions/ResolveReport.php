@@ -15,7 +15,7 @@ use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
- * Resolve a report (FR-305). Called with a decision when a case is
+ * Resolve a report. Called with a decision when a case is
  * decided (I-06, from milestone M7's DecideCase) or without one when a
  * moderator resolves an unattached report directly.
  */

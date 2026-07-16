@@ -20,8 +20,8 @@ use Syriable\Casework\Support\ModelRegistry;
  * The unit of moderation work (domain model E3). Named CaseFile because
  * `case` is a PHP reserved word (ADR-0008); the domain term is "case".
  * Scopes cover querying by state, assignee, subject, and priority
- * without raw SQL (FR-207); every lifecycle action records its actor
- * in the audit trail (FR-208).
+ * without raw SQL; every lifecycle action records its actor
+ * in the audit trail.
  */
 class CaseFile extends Model implements Stateful
 {
@@ -43,7 +43,7 @@ class CaseFile extends Model implements Stateful
     }
 
     /**
-     * Primary subject, fixed at creation (I-05).
+     * Primary subject, fixed at creation.
      *
      * @return MorphTo<Model, $this>
      */

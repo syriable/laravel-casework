@@ -199,7 +199,7 @@ it('enforces moderation scopes on top of policy grants', function (): void {
     Gate::before(fn () => true); // the app grants everything…
 
     // …but the resolver scopes this moderator to "listings" while the
-    // case's subject belongs to "electronics" (FR-602).
+    // case's subject belongs to "electronics".
     app()->instance(ScopeResolver::class, new class implements ScopeResolver
     {
         public function scopesFor(Model $actor): ?array

@@ -1,13 +1,12 @@
 # ADR-0011 — Audit Table Shape
 
-**Status:** Proposed (Gate G6)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 6 — Database Design
 
 ## Context
 
-Every domain action writes an audit entry (FR-701); the table is append-only (FR-703),
-must answer subject/actor/action/time-range queries (FR-704), and will be the package's
+Every domain action writes an audit entry; the table is append-only,
+must answer subject/actor/action/time-range queries, and will be the package's
 highest-volume table. C5 Audit is a pure sink — no domain behavior reads it.
 
 ## Problem
@@ -26,8 +25,8 @@ One generic audit table, per-context audit tables, or full event sourcing?
 
 **Alternative 1: one `casework_audit_entries` table.** Dot-namespaced action keys
 (`report.filed`, `case.decided`, `restriction.lifted`, …) with the authoritative key list
-maintained in the Phase 8 event catalog (one name per occurrence, shared between events
-and audit). Structured details go in the JSON `payload`; package queries never filter on
+maintained in the [event catalog](../events/catalog.md) (one name per occurrence, shared
+between events and audit). Structured details go in the JSON `payload`; package queries never filter on
 payload contents — only on the indexed columns (auditable, actor, action, created_at).
 
 Event sourcing (3) is rejected as framework-building (roadmap: never over-engineer);
@@ -41,7 +40,7 @@ schema duplicates ADR-0002/0001 columns five times for no query gain.
   (the Audit Recorder, architecture §2) keeps I-04 enforceable.
 - **+** New auditable actions cost a key string, not a migration.
 - **−** JSON payloads are schemaless — mitigated: payload *shape per action key* is
-  documented in the Phase 8 catalog and covered by tests; payloads are additive-only
-  after release (NFR-08).
+  documented in the [event catalog](../events/catalog.md) and covered by tests; payloads
+  are additive-only after release.
 - **−** One big table — mitigated by covering indexes, insert-only workload, and opt-in
-  pruning (FR-705).
+  pruning.

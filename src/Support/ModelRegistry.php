@@ -16,6 +16,7 @@ use Syriable\Casework\Enforcement\Models\Warning;
 use Syriable\Casework\Exceptions\InvalidConfiguration;
 use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Reporting\Models\Report;
+use Syriable\Casework\Reporting\Models\ReporterReputation;
 
 /**
  * Model override resolution (X1, FR-901): all package code resolves model
@@ -35,6 +36,7 @@ final class ModelRegistry
         'warning' => Warning::class,
         'appeal' => Appeal::class,
         'audit_entry' => AuditEntry::class,
+        'reporter_reputation' => ReporterReputation::class,
     ];
 
     /**

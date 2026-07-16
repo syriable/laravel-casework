@@ -1,9 +1,9 @@
 # Appeals
 
-A decision or a restriction can be appealed by the affected actor
-(FR-501). Appeals are first-class records with a state
-machine-managed lifecycle: `submitted → under_review → upheld /
-overturned / rejected` (FR-502).
+A decision or a restriction can be appealed by the affected actor.
+Appeals are first-class records with a state machine-managed
+lifecycle: `submitted → under_review → upheld / overturned /
+rejected`.
 
 ## Submitting an appeal
 
@@ -37,13 +37,12 @@ Casework::startAppealReview($appeal, by: $reviewer);
 When `casework.appeals.require_independent_reviewer` is `true` (the
 default), the reviewer must differ from the actor who made the
 appealed decision or issued the appealed restriction — otherwise
-`ReviewerNotIndependent` is thrown (FR-505, invariant I-12). The guard
-runs at assignment *and* at `startAppealReview`, so a config flip
-between the two cannot smuggle a dependent reviewer in.
+`ReviewerNotIndependent` is thrown. The guard runs at assignment
+*and* at `startAppealReview`, so a config flip between the two cannot
+smuggle a dependent reviewer in.
 
 Independently of that toggle, the appellant never reviews their own
-appeal while `casework.authorization.prevent_self_moderation` is on
-(FR-604).
+appeal while `casework.authorization.prevent_self_moderation` is on.
 
 `startAppealReview` records the acting model actor as the reviewer
 when no assignment happened beforehand; a pre-assigned reviewer is
@@ -100,11 +99,11 @@ dispatch after commit.
 ## Authorization
 
 `AppealPolicy` denies every ability (`submit`, `assign`, `review`,
-`resolve`) to model actors by default (FR-601) — register your own
+`resolve`) to model actors by default — register your own
 policy for the Appeal model to grant them. Applications typically
 grant `submit` to the affected actor and the review abilities to
 moderation staff. System attribution (`bySystem()` /
-`ActorRef::system()`) bypasses policies (FR-805).
+`ActorRef::system()`) bypasses policies.
 
 ## Querying
 

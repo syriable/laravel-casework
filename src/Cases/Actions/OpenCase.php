@@ -19,7 +19,7 @@ use Syriable\Casework\Support\Concerns\AuthorizesActions;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * Open a case about a primary subject, fixed at creation (FR-201, I-05).
+ * Open a case about a primary subject, fixed at creation.
  */
 class OpenCase
 {

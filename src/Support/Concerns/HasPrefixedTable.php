@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Support\Concerns;
 
 /**
- * Resolves the model's table from the configured prefix (FR-952).
+ * Resolves the model's table from the configured prefix.
  */
 trait HasPrefixedTable
 {

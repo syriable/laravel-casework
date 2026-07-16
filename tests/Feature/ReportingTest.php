@@ -36,7 +36,7 @@ it('files a report through the Phase 5 builder chain', function (): void {
     $user = Post::factory()->create();
     Reason::factory()->create(['key' => 'spam']);
 
-    // The exact quickstart chain from docs/api/public-api.md §2.
+    // The exact quickstart chain from the README.
     $report = Casework::report($post)
         ->by($user)
         ->because('spam')

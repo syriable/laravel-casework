@@ -30,7 +30,7 @@ it('assigns a dedupe key only to attributable, dedupe-guarded reports', function
     $anonymous = Casework::report($post)->anonymously()->because($reason)->file();
 
     expect($model->getAttribute('dedupe_key'))->not->toBeNull()
-        // System and anonymous origins carry no comparable identity (I-01),
+        // System and anonymous origins carry no comparable identity,
         // so they are never constrained by the index.
         ->and($system->getAttribute('dedupe_key'))->toBeNull()
         ->and($anonymous->getAttribute('dedupe_key'))->toBeNull();
