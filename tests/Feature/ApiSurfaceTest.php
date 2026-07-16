@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Syriable\Casework\Casework;
 
 /**
- * Freeze enforcement (Phase 16, NFR-08): the public API surface must
+ * Freeze enforcement: the public API surface must
  * match the frozen manifest in docs/api/frozen-api-1.0.md. Adding,
  * removing, or renaming anything below fails here — so no public-API
  * drift lands without a deliberate manifest edit (and an ADR).
@@ -42,6 +42,7 @@ it('freezes the contract surface', function (): void {
         'Notifier',
         'ReportIntakeStage',
         'Reportable',
+        'ReputationPolicy',
         'Restrictable',
         'ScopeResolver',
         'StateTransitionEvent',
@@ -62,6 +63,7 @@ it('freezes the facade method surface', function (): void {
     sort($methods);
 
     expect($methods)->toBe([
+        'adjustReputation',
         'appeal',
         'assignAppeal',
         'assignCase',
@@ -71,6 +73,7 @@ it('freezes the facade method surface', function (): void {
         'decide',
         'dismissReport',
         'escalateCase',
+        'isReporterBlocked',
         'isRestricted',
         'lift',
         'note',
@@ -98,6 +101,8 @@ it('freezes the exception surface', function (): void {
         'InvalidConfiguration',
         'InvalidTransition',
         'InvalidWorkflow',
+        'ReportRateLimited',
+        'ReporterBlocked',
         'ReviewerNotIndependent',
         'UnknownReason',
     ]);
@@ -105,6 +110,7 @@ it('freezes the exception surface', function (): void {
 
 it('freezes the trait surface', function (): void {
     expect(classesIn('Concerns', 'Concerns'))->toBe([
+        'HasReporterReputation',
         'InteractsWithReports',
         'InteractsWithRestrictions',
     ]);
@@ -142,6 +148,8 @@ it('freezes the event surface', function (): void {
         'ReportFiled',
         'ReportResolved',
         'ReportReviewStarted',
+        'ReporterBlocked',
+        'ReporterReputationChanged',
         'RestrictionApplied',
         'RestrictionExpired',
         'RestrictionLifted',

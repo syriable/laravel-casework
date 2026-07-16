@@ -17,6 +17,9 @@ integrity.
 - **Reporting** — fluent report filing with reasons-as-data, duplicate
   guards, anonymous/system origins, and configurable case-opening
   strategies
+- **Reporter reputation** — opt-in per-reporter scoring that reacts to
+  dismissed/upheld reports, with an optional block threshold and
+  per-reporter rate limiting to blunt report-bombing
 - **Case management** — cases with assignment, investigation, notes,
   evidence, priorities, and state machine-managed lifecycles
 - **Decisions** — atomic decisions that resolve reports and apply
@@ -113,14 +116,13 @@ end.
 | [Authorization](docs/guide/authorization.md) | policies, scopes, self-moderation |
 | [Events](docs/guide/events.md) | catalog, after-commit guarantee, notifiers |
 | [Automation](docs/guide/automation.md) | intake/triage pipelines |
-| [Extending](docs/guide/extending.md) | all thirteen extension points |
+| [Extending](docs/guide/extending.md) | all fourteen extension points |
 | [Workflows](docs/guide/workflows.md) | the four state machines |
 | [Configuration](docs/guide/configuration.md) | every key, defaults, validation |
 | [Exceptions](docs/guide/exceptions.md) | what throws, when |
 | [Testing your integration](docs/guide/testing-your-integration.md) | factories, fakes, assertions |
 
-Architecture records (ADRs, domain model, phase specifications) live
-in [docs/](docs/).
+Architecture decision records live in [docs/adr/](docs/adr/).
 
 ## Testing
 

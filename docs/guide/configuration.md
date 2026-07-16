@@ -1,11 +1,10 @@
 # Configuration
 
 One published file: `config/casework.php`. **Every key has a working
-default** (FR-951) — you can run the whole flow without publishing
+default** — you can run the whole flow without publishing
 anything. All class-name and enum-like values are boot-validated:
 invalid values throw `InvalidConfiguration` naming the offending key
-at boot, never at runtime. The design rationale lives in the
-[Phase 10 specification](../configuration.md).
+at boot, never at runtime.
 
 ```bash
 php artisan vendor:publish --tag="casework-config"
@@ -15,20 +14,27 @@ php artisan vendor:publish --tag="casework-config"
 
 | Key | Default | Meaning |
 |---|---|---|
-| `table_prefix` | `casework_` | Prefix for all ten tables; set before migrating |
+| `table_prefix` | `casework_` | Prefix for all eleven tables; set before migrating |
 | `models.*` | shipped classes | Model overrides (X1); values must subclass the shipped model |
-| `reporting.allow_duplicates` | `false` | Permit the same reporter to re-report the same subject for the same reason while a report is open (I-02) |
-| `reporting.allow_anonymous` | `true` | Permit `ActorRef::anonymous()` reports (FR-103) |
+| `reporting.allow_duplicates` | `false` | Permit the same reporter to re-report the same subject for the same reason while a report is open |
+| `reporting.allow_anonymous` | `true` | Permit `ActorRef::anonymous()` reports |
+| `reporting.reputation.enabled` | `false` | Track a score per reporter, adjusted on report dismissal/resolution (X14) |
+| `reporting.reputation.dismissed_delta` | `-1` | Score change when one of the reporter's reports is dismissed |
+| `reporting.reputation.upheld_delta` | `1` | Score change when a report is upheld/escalated |
+| `reporting.reputation.block_threshold` | `null` | Score at/below which reporting is blocked; `null` = tracking only |
+| `reporting.reputation.rate_limit` | `null` | Reports permitted per reporter within the window; `null` = no limit |
+| `reporting.reputation.rate_limit_window_minutes` | `60` | Window size for `rate_limit` |
+| `reporting.reputation.policy` | `DefaultReputationPolicy` | The scoring rule; must implement `Contracts\ReputationPolicy` (X14) |
 | `cases.strategy` | `threshold` | When reports open/join cases: `always`, `threshold`, `manual` (shipped as `AlwaysStrategy`, `ThresholdStrategy`, `ManualStrategy`), or a `CaseStrategy` class (X7) |
 | `cases.threshold` | `3` | Open reports per subject that trigger a case under `threshold` |
-| `cases.priorities` | `low, normal, high, urgent` | Ordered priority vocabulary (FR-204) |
+| `cases.priorities` | `low, normal, high, urgent` | Ordered priority vocabulary |
 | `cases.default_priority` | `normal` | Priority for new cases; must be in `priorities` |
 | `decisions.outcomes` | `[]` | Extra outcome keys beyond `dismiss`/`uphold`/`escalate` (X3) |
 | `enforcement.restriction_types` | `[]` | Extra restriction types beyond `suspension` (X4) |
-| `appeals.limit_per_target` | `1` | Appeals permitted per decision/restriction (FR-503) |
-| `appeals.window_days` | `30` | Days after the decision/restriction during which an appeal may be submitted; `null` = no window (FR-506) |
-| `appeals.require_independent_reviewer` | `true` | Reviewer must differ from the original decider/issuer (I-12) |
-| `authorization.prevent_self_moderation` | `true` | Actors cannot decide cases or review appeals concerning themselves (FR-604) |
+| `appeals.limit_per_target` | `1` | Appeals permitted per decision/restriction |
+| `appeals.window_days` | `30` | Days after the decision/restriction during which an appeal may be submitted; `null` = no window |
+| `appeals.require_independent_reviewer` | `true` | Reviewer must differ from the original decider/issuer |
+| `authorization.prevent_self_moderation` | `true` | Actors cannot decide cases or review appeals concerning themselves |
 | `notifiers` | `[]` | `Notifier` classes invoked, in order, for every event after commit (X8) |
 | `pipelines.intake` | `[]` | `ReportIntakeStage` classes, in order (X9) |
 | `pipelines.triage` | `[]` | `CaseTriageStage` classes, in order (X10) |

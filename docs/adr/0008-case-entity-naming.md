@@ -1,12 +1,11 @@
 # ADR-0008 — Case Entity Class Naming
 
-**Status:** Proposed (Gate G5)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 5 — Public API
 
 ## Context
 
-The central domain term is **Case** (glossary, Gate G2), but `case` is a PHP reserved
+The central domain term is **Case**, but `case` is a PHP reserved
 word — `class Case` is illegal. The model class needs a name that stays as close to the
 ubiquitous language as possible, since model class names surface in application code,
 morph types, factories, and policies.
@@ -29,7 +28,7 @@ What is the Eloquent model class name for the Case entity, and its table name?
 
 **`CaseFile`**, in `Syriable\Casework\Cases\Models\CaseFile`. Table name
 `casework_cases` (the table, unlike the class, may use the real word; all package tables
-share the configurable `casework_` prefix — finalized in Phase 6). Relationship and
+share the configurable `casework_` prefix). Relationship and
 method names use the plain domain word wherever PHP allows: `$post->cases()`,
 `Casework::openCase()`, `assignCase()`, `CaseOpened` event.
 

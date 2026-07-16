@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Cases;
 
 /**
- * Core case lifecycle states (docs/workflows/case.md).
+ * Core case lifecycle states (docs/guide/workflows.md).
  */
 enum CaseState: string
 {

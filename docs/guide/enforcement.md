@@ -73,7 +73,7 @@ Schedule::command('casework:expire-restrictions')
 ```
 
 Cadence is a bookkeeping choice, never a correctness one: `isRestricted()`
-and `activeRestrictions()` already honor expiry in real time (I-09), so a
+and `activeRestrictions()` already honor expiry in real time, so a
 missed run only delays the `RestrictionExpired` events and audit entries,
 never the enforcement itself.
 

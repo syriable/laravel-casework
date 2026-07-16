@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Schema;
 
-it('creates all ten package tables with the configured prefix', function (): void {
+it('creates all eleven package tables with the configured prefix', function (): void {
     foreach ([
         'casework_reasons', 'casework_reports', 'casework_cases',
         'casework_case_notes', 'casework_case_evidence', 'casework_decisions',
         'casework_restrictions', 'casework_warnings', 'casework_appeals',
-        'casework_audit_entries',
+        'casework_audit_entries', 'casework_reporter_reputations',
     ] as $table) {
         expect(Schema::hasTable($table))->toBeTrue("missing table {$table}");
     }
@@ -33,7 +33,7 @@ it('rolls back cleanly', function (): void {
     // DDL inside RefreshDatabase's wrapper) and flakes; down()/up()
     // correctness is what this test owns.
     $files = glob(__DIR__.'/../../database/migrations/*.php') ?: [];
-    expect($files)->toHaveCount(12);
+    expect($files)->toHaveCount(13);
 
     foreach (array_reverse($files) as $file) {
         (require $file)->down();

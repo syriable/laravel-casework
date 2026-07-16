@@ -12,7 +12,7 @@ use Syriable\Casework\Support\ActorRef;
 
 /**
  * Test triage stage: escalates every fresh case through the regular
- * package operation, as the System actor (FR-805).
+ * package operation, as the System actor.
  */
 class EscalatesTriageStage implements CaseTriageStage
 {

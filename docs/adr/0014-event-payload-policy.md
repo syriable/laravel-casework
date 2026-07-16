@@ -1,15 +1,14 @@
 # ADR-0014 — Event Payload Policy
 
-**Status:** Proposed (Gate G8)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 8 — Events
 
 ## Context
 
-FR-801 requires every meaningful occurrence to dispatch an event "carrying models not
-arrays". Events are the package's primary integration surface (vision pillar 6);
-listeners power notifications and automation. Payload shape is public API, BC-governed
-(NFR-08).
+Every meaningful occurrence must dispatch an event "carrying models
+not arrays". Events are the package's primary integration surface;
+listeners power notifications and automation. Payload shape is public
+API, BC-governed.
 
 ## Problem
 
@@ -31,7 +30,7 @@ holding the live models involved plus scalar context (from/to states, reasons) a
 - `final`: event classes are not extension points — apps extend by listening, not
   subclassing (keeps the catalog authoritative).
 - Payload changes after release are **additive only**; removing or retyping a property
-  is breaking (NFR-08).
+  is breaking.
 - Events carrying collections type them (`Collection<Restriction>`) and guarantee
   non-null (possibly empty) collections.
 

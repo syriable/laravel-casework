@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Appeals;
 
 /**
- * Core appeal lifecycle states (docs/workflows/appeal.md).
+ * Core appeal lifecycle states (docs/guide/workflows.md).
  */
 enum AppealState: string
 {

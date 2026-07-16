@@ -30,6 +30,7 @@ $exempt = [
     'CaseworkServiceProvider',      // Laravel wiring, not API
     'NotifierDispatcher',           // internal bridge for the notifier loop
     'RunTriagePipeline',            // internal listener
+    'AdjustReputationOnReportOutcome', // internal listener
     'Recorder',                     // not swappable by design (I-04)
     'TransitionContext',            // guard-internal surface (architecture docs)
     'TransitionDefinition',         // covered via extending.md snippets by name

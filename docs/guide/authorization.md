@@ -1,6 +1,6 @@
 # Authorization
 
-Every operation authorizes before executing (FR-601). Three layers:
+Every operation authorizes before executing. Three layers:
 
 1. **Policies** — Gate policies on the package models, safe-by-default.
 2. **Scopes** — a `ScopeResolver` bounding *where* an actor may moderate.
@@ -10,7 +10,7 @@ Every operation authorizes before executing (FR-601). Three layers:
 
 Operations take a `Model`, `ActorRef::model($m)`, `ActorRef::system()`,
 or (for reporting) `ActorRef::anonymous()`. **System attribution
-bypasses policies by design** (FR-805) — it is how schedulers, intake
+bypasses policies by design** — it is how schedulers, intake
 stages, and triage automation act. Anonymous actors are governed by
 the specific operation's own rules (e.g.
 `casework.reporting.allow_anonymous`).
@@ -18,13 +18,13 @@ the specific operation's own rules (e.g.
 ## Default policies
 
 The package registers a policy per model at boot — `ReportPolicy`,
-`CasePolicy`, `RestrictionPolicy`, `WarningPolicy`, `AppealPolicy` —
-only when your application hasn't registered its own. Defaults are
-safe-by-default:
+`CasePolicy`, `RestrictionPolicy`, `WarningPolicy`, `AppealPolicy`,
+`ReporterReputationPolicy` — only when your application hasn't
+registered its own. Defaults are safe-by-default:
 any model actor may `file` a report and that is all; every moderation
 ability (`startReview`, `dismiss`, `decide`, `apply`, `lift`, `warn`,
-`submit`/`assign`/`review`/`resolve` on appeals, …) denies until you
-grant it.
+`submit`/`assign`/`review`/`resolve` on appeals, `adjust` on reputation, …)
+denies until you grant it.
 
 Override by registering your own policy — it replaces the default
 entirely:
@@ -53,8 +53,7 @@ review policy overrides like you review middleware.
 
 ## Scoped moderation
 
-Bind a `ScopeResolver` to bound actors to segments of your platform
-(FR-602):
+Bind a `ScopeResolver` to bound actors to segments of your platform:
 
 ```php
 use Syriable\Casework\Contracts\ScopeResolver;
@@ -83,7 +82,7 @@ grants**. The default `NullScopeResolver` leaves everything unscoped.
 
 With `casework.authorization.prevent_self_moderation` on (default),
 actors cannot decide cases about themselves or review appeals they
-filed (FR-604). Independently,
+filed. Independently,
 `casework.appeals.require_independent_reviewer` keeps the appeal
-reviewer distinct from the original decider/issuer (I-12) — see
+reviewer distinct from the original decider/issuer — see
 [appeals](appeals.md).

@@ -18,7 +18,7 @@ use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
  * Move a submitted appeal under review. The acting model actor is
- * vetted for independence (I-12) and recorded as the reviewer when no
+ * vetted for independence and recorded as the reviewer when no
  * assignment happened beforehand.
  */
 class StartAppealReview

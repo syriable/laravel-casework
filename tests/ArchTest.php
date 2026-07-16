@@ -62,7 +62,7 @@ arch('models stay side-effect-free')
     ]);
 
 // ADR-0017: the workflow engine and its data carriers are final; the
-// definitions are the designed subclass point (ADR-0013).
+// definitions are the designed subclass point (ADR-0019).
 arch('the workflow engine is final')
     ->expect([
         'Syriable\Casework\States\Workflow',

@@ -1,13 +1,12 @@
 # ADR-0017 — Final vs Open Class Policy
 
-**Status:** Proposed (Gate G9)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 9 — Extension System
 
 ## Context
 
 Every non-final class is an implicit extension contract: subclass behavior must survive
-upgrades, multiplying the BC surface (NFR-08). Every final class is a wall: needs must be
+upgrades, multiplying the BC surface. Every final class is a wall: needs must be
 met elsewhere. The package promises extension without forking (vision pillar 7) *and*
 long-term maintainability.
 
@@ -27,10 +26,10 @@ Which package classes may applications subclass, and which are sealed?
 
 | Kind | Policy | Rationale |
 |---|---|---|
-| Eloquent models | **Open** (non-final, designed for subclassing) | X1 model overrides are a core requirement (FR-901); protected surface = relations, scopes, casts |
+| Eloquent models | **Open** (non-final, designed for subclassing) | X1 model overrides are a core requirement; protected surface = relations, scopes, casts |
 | Action classes | **Open**, replace via container rebind (X11) | Decoration/extension of operations is a stated need; class name is the binding key |
 | Guard classes | **Open**, rebind individually (X13) | Single-guard customization without touching workflows |
-| Workflow definitions | **Open** within ADR-0013 bounds | FR-903 |
+| Workflow definitions | **Open** within ADR-0019 bounds | X5: applications add guarded transitions between existing states |
 | Event classes | **Final** (ADR-0014) | Catalog authority; extension = listening |
 | Value objects | **Final** | Invariant carriers; open sets are string-backed by design, not by subclassing |
 | Builders (pending operations) | **Final** | Their semantics belong to the actions they feed (ADR-0009); customize the action, not the sugar |
@@ -50,5 +49,4 @@ ceremony onto simple needs.
   documented subclass points, everything else evolves freely behind contracts and events.
 - **−** `final` occasionally frustrates unforeseen needs — the designed answer is a
   feature request or contract addition, not a fork; documented in extending.md.
-- PHPStan rule (Phase 11/14): `final` enforced by default, non-final only for the kinds
-  listed open.
+- PHPStan rule: `final` enforced by default, non-final only for the kinds listed open.

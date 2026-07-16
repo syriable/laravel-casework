@@ -26,13 +26,9 @@
         "illuminate/contracts": "^12.0||^13.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.24.1",
         "larastan/larastan": "^3.9.6",
-        "laravel/boost": "^2.4",
-        "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.18",
-        "laravel/sail": "^1.58.0",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.9.4",
         "orchestra/testbench": "^10.0||^11.0",

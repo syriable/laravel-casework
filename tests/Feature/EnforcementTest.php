@@ -97,7 +97,7 @@ it('expires due restrictions via the command without affecting correctness', fun
     $permanent = Restriction::factory()->about($subject)->create();
     $future = Restriction::factory()->about($subject)->expiringAt(now()->addWeek())->create();
 
-    // The real-time rule holds before the command runs (I-09).
+    // The real-time rule holds before the command runs.
     expect($stale->isActive())->toBeFalse()
         ->and(Casework::isRestricted($subject))->toBeTrue();
 
@@ -179,7 +179,7 @@ it('applies the real-time rule across trait and facade checks', function (): voi
 
     $this->travel(2)->days();
 
-    // Stored state is still active; every check disagrees (I-09).
+    // Stored state is still active; every check disagrees.
     expect($restriction->refresh()->getAttribute('state'))->toBe('active')
         ->and($user->isSuspended())->toBeFalse()
         ->and($user->activeRestrictions()->count())->toBe(0)

@@ -90,7 +90,7 @@ it('enforces the per-target appeal limit at N versus N+1', function (): void {
 
     Casework::appeal($restriction)->bySystem()->submit();
 
-    // Default limit: one appeal per target (FR-503).
+    // Default limit: one appeal per target.
     expect(fn () => Casework::appeal($restriction)->bySystem()->submit())
         ->toThrow(AppealLimitReached::class, 'limit of 1');
 
@@ -131,7 +131,7 @@ it('requires an independent reviewer for assignment (I-12)', function (): void {
     expect(fn () => Casework::assignAppeal($decisionAppeal, to: $issuer, by: $lead))
         ->toThrow(ReviewerNotIndependent::class);
 
-    // Independence is configurable (FR-505).
+    // Independence is configurable.
     config()->set('casework.appeals.require_independent_reviewer', false);
 
     Casework::assignAppeal($appeal, to: $issuer, by: $lead);
@@ -268,7 +268,7 @@ it('overturns an appealed decision atomically with lift and supersession (I-13)'
 
     expect($appeal->getAttribute('state'))->toBe('overturned')
         ->and($active->refresh()->getAttribute('state'))->toBe('lifted')
-        // Inactive restrictions have nothing to lift (I-10).
+        // Inactive restrictions have nothing to lift.
         ->and($stale->refresh()->getAttribute('state'))->toBe('active')
         ->and($superseding)->not->toBeNull()
         ->and($superseding->outcome)->toBe(Outcome::DISMISS)

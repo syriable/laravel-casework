@@ -1,6 +1,6 @@
 # Automation
 
-Two pipeline-style intercept points (FR-804) let applications automate
+Two pipeline-style intercept points let applications automate
 moderation without forking: **intake** (as a report is filed) and
 **triage** (as a case opens). Stages are declared in config, resolved
 from the container, and run in listed order:
@@ -80,10 +80,10 @@ class AutoAssignByScope implements CaseTriageStage
 
 Triage stages run when `CaseOpened` commits. They act **through
 package operations** — assign, escalate, note, even decide — as the
-System actor (FR-805), so everything they do receives the full
+System actor, so everything they do receives the full
 authorize → guard → transact → audit → event treatment: an automated
 suspension is audited exactly like a human one. Stages cannot write
-around the pipeline; there is no unaudited path (I-04).
+around the pipeline; there is no unaudited path.
 
 Stages can act, but events cannot veto (ADR-0015): if you need to
 *prevent* an operation rather than react to it, this pipeline (or a

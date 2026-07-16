@@ -8,7 +8,7 @@ use Syriable\Casework\States\TransitionDefinition;
 use Syriable\Casework\States\WorkflowDefinition;
 
 /**
- * The case lifecycle, verbatim from docs/workflows/case.md. `decide` is
+ * The case lifecycle, verbatim from docs/guide/workflows.md. `decide` is
  * legal from every pre-decided core state — lightweight flows may skip
  * investigation.
  */

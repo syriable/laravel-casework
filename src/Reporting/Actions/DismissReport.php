@@ -15,8 +15,8 @@ use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
- * Dismiss an unattached report (FR-104). Attached reports are dismissed
- * only through their case's decision (docs/workflows/report.md †).
+ * Dismiss an unattached report. Attached reports are dismissed
+ * only through their case's decision (docs/guide/workflows.md †).
  */
 class DismissReport
 {

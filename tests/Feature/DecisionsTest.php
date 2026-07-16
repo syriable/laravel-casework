@@ -89,7 +89,7 @@ it('records supersession chains', function (): void {
     $case = CaseFile::factory()->create();
     $original = Casework::decide($case)->bySystem()->outcome(Outcome::DISMISS)->finalize();
 
-    // A superseding decision on the already-decided case (FR-304): the
+    // A superseding decision on the already-decided case: the
     // case is not decidable again — deciding requires a pre-decided
     // state — so supersession happens through appeals (M8) or a fresh
     // case; here we assert the chain field itself via a new case.

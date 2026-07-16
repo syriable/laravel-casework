@@ -47,8 +47,7 @@ attempt it, use policies ([authorization](authorization.md)).
 
 ## The notifier hook
 
-Instead of (or alongside) listeners, register single-entry notifiers
-(FR-803):
+Instead of (or alongside) listeners, register single-entry notifiers:
 
 ```php
 // config/casework.php
@@ -120,7 +119,7 @@ subject yields a null morph. Handle both.
 ## Opaque texts may contain PII
 
 Comments, statements, and rationales are opaque to the package but may
-contain end-user personal data (NFR-09/10). If a listener ships event
+contain end-user personal data. If a listener ships event
 payload contents into external systems (Slack messages, analytics,
 tickets), your application owns that disclosure — send ids, not texts,
 unless the destination is cleared for them.

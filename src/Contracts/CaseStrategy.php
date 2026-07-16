@@ -11,7 +11,7 @@ use Syriable\Casework\Reporting\Models\Report;
  * When reports become or join cases (FR-205, extension point X7).
  * Selected via config('casework.cases.strategy'): 'always', 'threshold',
  * 'manual', or an implementing class name. Runs inside report intake as
- * the System actor (FR-805).
+ * the System actor.
  */
 interface CaseStrategy
 {

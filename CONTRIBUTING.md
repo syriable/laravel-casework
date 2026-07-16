@@ -40,7 +40,6 @@ vendor/bin/phpstan analyse                       # level 9, empty baseline
 vendor/bin/pint                                  # code style
 POKIO_ASYNC=false vendor/bin/pest --type-coverage --min=95
 php scripts/check-doc-completeness.php
-php scripts/check-fr-traceability.php
 ```
 
 CI additionally runs the unit/feature matrix and the integration
@@ -49,8 +48,7 @@ suite against MySQL, PostgreSQL, and MariaDB.
 ## Coding standards
 
 - PHP 8.4+, `declare(strict_types=1)`, typed properties and signatures.
-- Follow the existing layout (`docs/adr/0004-domain-first-package-layout.md`)
-  and the glossary naming rules (`docs/`).
+- Follow the existing layout (`docs/adr/0004-domain-first-package-layout.md`).
 - Pint (Laravel preset) is the formatter; PHPStan level 9 is the floor.
 
 ## Reporting security issues

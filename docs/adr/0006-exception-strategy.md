@@ -1,14 +1,13 @@
 # ADR-0006 — Exception Strategy
 
-**Status:** Proposed (Gate G4)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 4 — Architecture
 
 ## Context
 
 Domain operations can fail for domain reasons (invalid transition, duplicate report,
 closed appeal window, immutability violation — invariants I-01…I-15) and for
-authorization reasons (FR-601). Applications need to catch package failures precisely
+authorization reasons. Applications need to catch package failures precisely
 (one specific failure) or broadly (anything from the package), and render them in their
 own UI/API — which the package must not assume.
 
@@ -44,8 +43,8 @@ rejected: it makes precise catching stringly-typed.
 - **+** `catch (CaseworkException $e)` for broad handling; `catch (AppealWindowClosed $e)`
   for precise flows (e.g. rendering a "too late" page) — with typed data, no parsing.
 - **+** Authorization behaves exactly like the host application's own policies.
-- **+** Exceptions are part of the public API: documented per operation in Phase 5, BC-
-  governed thereafter (NFR-08).
+- **+** Exceptions are part of the public API: documented per operation
+  in the guides, BC-governed thereafter.
 - **−** New failure modes in minor versions must extend existing catch surfaces
   compatibly (new subclasses are additive; changing a parent class is breaking) — noted
-  for the BC policy in Phase 17.
+  in the [support policy](../support-policy.md).

@@ -13,7 +13,7 @@ use Syriable\Casework\Cases\Models\CaseFile;
  * CaseOpened commits.
  *
  * Stages act through package operations (assign, escalate, decide, …)
- * with System attribution (FR-805) and therefore receive the full
+ * with System attribution and therefore receive the full
  * authorize → guard → transact → audit → event treatment — an
  * automated decision is audited exactly like a human one. A stage
  * short-circuits by returning without calling $next.

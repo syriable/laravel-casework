@@ -1,8 +1,7 @@
 # ADR-0016 — Extension Binding Strategy
 
-**Status:** Proposed (Gate G9)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 9 — Extension System
 
 ## Context
 
@@ -28,7 +27,7 @@ bindings — and does the package adopt a manager/driver pattern?
 
 ## Decision
 
-**Alternative 1.** The rule, applied to the Phase 9 inventory:
+**Alternative 1.** The rule, applied to every extension point:
 
 - **Config** (declaration): model overrides map, extra outcomes, extra restriction
   types, case-strategy selection + parameters, notifier list, intake/triage stage lists.

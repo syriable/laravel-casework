@@ -9,8 +9,9 @@ use Syriable\Casework\Exceptions\InvalidWorkflow;
 /**
  * A declarative lifecycle definition (ADR-0012). Concrete shipped
  * definitions declare their core tables as final methods; applications
- * extend by subclassing and overriding customStates()/customTransitions()
- * — add-only, within the ADR-0013 rules, verified by validate() at boot.
+ * extend by subclassing and overriding customTransitions() — add-only
+ * transitions between existing states, within the ADR-0019 rules,
+ * verified by validate() at boot.
  */
 abstract class WorkflowDefinition
 {
@@ -30,17 +31,9 @@ abstract class WorkflowDefinition
     abstract protected function coreTransitions(): array;
 
     /**
-     * Application-added states (ADR-0013). Add-only.
-     *
-     * @return list<string>
-     */
-    protected function customStates(): array
-    {
-        return [];
-    }
-
-    /**
-     * Application-added transitions (ADR-0013). Add-only.
+     * Application-added transitions between existing states (ADR-0019).
+     * Add-only: a custom transition may never introduce a new state,
+     * retarget a core transition, or leave a terminal state.
      *
      * @return list<TransitionDefinition>
      */
@@ -52,15 +45,10 @@ abstract class WorkflowDefinition
     /** @return list<string> */
     final public function states(): array
     {
-        return [...$this->coreStates(), ...$this->customStates()];
+        return $this->coreStates();
     }
 
-    /**
-     * Terminal states are always the core terminals: custom states may
-     * never be terminal and terminals stay closed (ADR-0013 rules 2–3).
-     *
-     * @return list<string>
-     */
+    /** @return list<string> */
     final public function terminalStates(): array
     {
         return $this->coreTerminalStates();
@@ -96,7 +84,7 @@ abstract class WorkflowDefinition
 
     /**
      * The definition allowing $name from $fromState, if any. Core rows
-     * win over custom rows with the same name (rule 1).
+     * win over custom rows with the same name.
      */
     final public function find(string $name, string $fromState): ?TransitionDefinition
     {
@@ -121,30 +109,19 @@ abstract class WorkflowDefinition
     }
 
     /**
-     * Boot-time enforcement of the ADR-0013 rules. Violations throw —
-     * never at runtime.
+     * Boot-time enforcement of the ADR-0019 rules. Violations throw —
+     * never at runtime. Custom transitions may only connect existing
+     * states: there is no state-reachability analysis to run, because
+     * a custom transition can never introduce a state that wasn't
+     * already there.
      *
      * @throws InvalidWorkflow
      */
     final public function validate(): void
     {
         $name = static::class;
-        $core = $this->coreStates();
-        $custom = $this->customStates();
         $states = $this->states();
         $terminals = $this->terminalStates();
-
-        // Rule 5: custom state names are non-empty, fit the column, and
-        // do not collide with core (or each other).
-        foreach ($custom as $state) {
-            if ($state === '' || strlen($state) > 32) {
-                throw InvalidWorkflow::violation($name, 'custom state names must be non-empty strings of at most 32 characters');
-            }
-
-            if (in_array($state, $core, true)) {
-                throw InvalidWorkflow::violation($name, "custom state [{$state}] collides with a core state");
-            }
-        }
 
         if (count($states) !== count(array_unique($states))) {
             throw InvalidWorkflow::violation($name, 'state names must be unique');
@@ -165,7 +142,7 @@ abstract class WorkflowDefinition
                     throw InvalidWorkflow::violation($name, "transition [{$transition->name}] starts from undeclared state [{$from}]");
                 }
 
-                // Rule 2: terminals stay closed — for everyone.
+                // Terminals stay closed — for everyone.
                 if (in_array($from, $terminals, true)) {
                     throw InvalidWorkflow::violation($name, "transition [{$transition->name}] leaves terminal state [{$from}]");
                 }
@@ -175,9 +152,9 @@ abstract class WorkflowDefinition
                 continue;
             }
 
-            // Rule 1: core transitions are non-retargetable. A custom row
-            // sharing a core name may only widen the from-set toward the
-            // same target (rule 6), and never duplicate a core pair.
+            // Core transitions are non-retargetable. A custom row sharing
+            // a core name may only widen the from-set toward the same
+            // target, and never duplicate a core pair.
             foreach ($coreTransitions as $coreTransition) {
                 if ($coreTransition->name !== $transition->name) {
                     continue;
@@ -192,71 +169,5 @@ abstract class WorkflowDefinition
                 }
             }
         }
-
-        $this->assertConnected($name, $custom, $terminals);
-    }
-
-    /**
-     * Rule 3: every custom state is reachable from creation and has a
-     * path back to a core state or terminal — no traps.
-     *
-     * @param  list<string>  $custom
-     * @param  list<string>  $terminals
-     */
-    private function assertConnected(string $name, array $custom, array $terminals): void
-    {
-        if ($custom === []) {
-            return;
-        }
-
-        $forward = [];
-
-        foreach ($this->transitions() as $transition) {
-            $sources = $transition->isCreation() ? ['(new)'] : $transition->from;
-
-            foreach ($sources as $source) {
-                $forward[$source][] = $transition->to;
-            }
-        }
-
-        $reachable = $this->walk('(new)', $forward);
-
-        foreach ($custom as $state) {
-            if (! in_array($state, $reachable, true)) {
-                throw InvalidWorkflow::violation($name, "custom state [{$state}] is unreachable");
-            }
-
-            $exits = $this->walk($state, $forward);
-            $core = array_diff($this->coreStates(), [$state]);
-
-            if (array_intersect($exits, [...$core, ...$terminals]) === []) {
-                throw InvalidWorkflow::violation($name, "custom state [{$state}] has no path back to a core or terminal state");
-            }
-        }
-    }
-
-    /**
-     * States reachable from $start (exclusive) following $forward edges.
-     *
-     * @param  array<string, list<string>>  $forward
-     * @return list<string>
-     */
-    private function walk(string $start, array $forward): array
-    {
-        $seen = [];
-        $queue = $forward[$start] ?? [];
-
-        while ($queue !== []) {
-            $state = array_shift($queue);
-
-            if (in_array($state, $seen, true)) {
-                continue;
-            }
-
-            $seen[] = $state;
-            $queue = [...$queue, ...($forward[$state] ?? [])];
-        }
-
-        return $seen;
     }
 }

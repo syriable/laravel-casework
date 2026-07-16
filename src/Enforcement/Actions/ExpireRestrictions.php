@@ -14,9 +14,9 @@ use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * Formalize due expirations (FR-404): transitions stale active rows to
+ * Formalize due expirations: transitions stale active rows to
  * expired with audit + events. Correctness never depends on this — the
- * real-time rule (I-09) already treats them as inactive.
+ * real-time rule already treats them as inactive.
  */
 class ExpireRestrictions
 {

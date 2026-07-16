@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Enforcement;
 
 /**
- * Core restriction lifecycle states (docs/workflows/restriction.md).
+ * Core restriction lifecycle states (docs/guide/workflows.md).
  */
 enum RestrictionState: string
 {

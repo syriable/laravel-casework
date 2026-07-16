@@ -9,7 +9,7 @@ on:
 
 jobs:
   docs:
-    name: doc completeness & FR traceability
+    name: doc completeness
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -26,6 +26,3 @@ jobs:
 
       - name: Doc completeness (every public class and facade method documented)
         run: php scripts/check-doc-completeness.php
-
-      - name: FR traceability (every MUST/SHOULD requirement anchored)
-        run: php scripts/check-fr-traceability.php

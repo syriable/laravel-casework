@@ -1,8 +1,7 @@
 # ADR-0009 — Pending-Operation Builders for Multi-Option Operations
 
-**Status:** Proposed (Gate G5)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 5 — Public API
 
 ## Context
 
@@ -51,6 +50,6 @@ actions is unreadable as one call.
   half-built intents are inert and test-friendly.
 - **+** The bright-line rule prevents API drift into "everything is a builder".
 - **−** Builders are additional public classes to maintain and BC-govern — bounded: one
-  per compound operation, enumerated in the Phase 5 spec.
+  per compound operation, enumerated in the [public API manifest](../api/frozen-api-1.0.md).
 - **−** Two invocation styles exist — mitigated by the rule being mechanical and
   documented in the API spec header.

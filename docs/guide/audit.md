@@ -1,9 +1,9 @@
 # Audit
 
 Every domain action writes exactly one audit entry — who did what to
-which record, when, with a scalar payload (FR-700). There is no
+which record, when, with a scalar payload. There is no
 unaudited operation and no extension point that can suppress or forge
-entries (I-04): the `Recorder` is not swappable.
+entries: the `Recorder` is not swappable.
 
 ## Querying
 
@@ -45,14 +45,13 @@ code, not against a hostile DBA.
 
 Audit payloads mirror event payloads as scalars and ids. Opaque texts
 recorded alongside operations — report comments, rationales, appeal
-statements — may contain end-user personal data (NFR-09/10). If you
+statements — may contain end-user personal data. If you
 export audit rows into external systems, your application owns that
 disclosure.
 
 ## Pruning (opt-in)
 
-Retention is a business decision, so pruning never runs implicitly
-(FR-705):
+Retention is a business decision, so pruning never runs implicitly:
 
 ```bash
 php artisan casework:prune-audit --before=2025-01-01

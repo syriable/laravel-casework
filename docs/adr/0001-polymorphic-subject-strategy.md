@@ -1,16 +1,15 @@
 # ADR-0001 — Polymorphic Subject Strategy
 
-**Status:** Proposed (Gate G3)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 3 — Domain Modeling
 
 ## Context
 
-Reports, cases, restrictions, warnings, appeals, and audit entries must all target "any
-Eloquent model" (FR-101, FR-401, FR-501, FR-701). The package cannot know application
-model classes in advance, and the same subject columns must serve queries like "all
-reports for this post" and "does this user have an active suspension" efficiently
-(FR-108, FR-405, NFR-04).
+Reports, cases, restrictions, warnings, appeals, and audit entries must
+all target "any Eloquent model". The package cannot know application
+model classes in advance, and the same subject columns must serve
+queries like "all reports for this post" and "does this user have an
+active suspension" efficiently.
 
 ## Problem
 
@@ -32,14 +31,14 @@ uniformly across all contexts?
 package uses conventional `{name}_type` / `{name}_id` column pairs and native Eloquent
 relations. Documentation MUST recommend an enforced morph map
 (`Relation::enforceMorphMap`) as a best practice, and the package MUST work with and
-without one. Composite indexes on `({name}_type, {name}_id)` are mandatory (finalized in
-Phase 6). Column sizing follows the identifier ADR to be made in Phase 6 (NFR-12).
+without one. Composite indexes on `({name}_type, {name}_id)` are
+mandatory. Column sizing follows the identifier ADR (ADR-0010).
 
 ## Consequences
 
 - **+** Idiomatic Laravel: zero learning curve, eager loading, `whereMorphedTo`, factory
   support all work natively (vision pillar "Laravel Native").
-- **+** No extra join (vs. registry) on the hot enforcement-check path (NFR-04).
+- **+** No extra join (vs. registry) on the hot enforcement-check path.
 - **+** One uniform pattern across all six polymorphic references.
 - **−** Morph type strings couple stored data to class names unless a morph map is used —
   mitigated by documentation and upgrade-guide guidance.

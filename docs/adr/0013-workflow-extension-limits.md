@@ -1,12 +1,11 @@
 # ADR-0013 — Workflow Extension Limits
 
-**Status:** Proposed (Gate G7)
+**Status:** Superseded by [ADR-0019](0019-narrow-workflow-extension-to-transitions.md)
 **Date:** 2026-07-14
-**Phase:** 7 — Workflows & State Machines
 
 ## Context
 
-FR-903: applications may add states and transitions, but core states are non-removable.
+Applications may add states and transitions, but core states are non-removable.
 Unlimited workflow surgery would break package operations (decide assumes decidable
 states exist), events, audit semantics, and upgrade safety.
 
@@ -37,13 +36,13 @@ Exactly how far may an application modify the shipped workflows?
    mint package event classes; apps listen to the generic event or dispatch their own in
    listeners).
 5. **Custom state names** are plain strings, must not collide with core names, and fit
-   the `string(32)` column (Phase 6).
+   the `string(32)` column.
 6. Package operations keep their documented semantics: e.g. `decide` remains legal from
    every non-terminal, pre-decided core state; custom pre-decided states may declare
    themselves decidable by listing the `decide` transition from themselves.
 
-Full replacement (2) is rejected — it makes every package guarantee (I-03…I-13)
-unverifiable and every upgrade a gamble. No extension (3) fails FR-903 and real T&S
+Full replacement (2) is rejected — it makes every package guarantee
+unverifiable and every upgrade a gamble. No extension (3) fails real T&S
 practice (e.g. an `awaiting_legal` case state).
 
 ## Consequences
@@ -55,5 +54,5 @@ practice (e.g. an `awaiting_legal` case state).
 - **−** Some conceivable customizations (removing investigation, renaming states) are
   impossible by design — documented as such; the escape hatch is building outside the
   package, not bending it.
-- Testing strategy (Phase 11) must include extension-registration cases: valid additions,
+- Testing strategy must include extension-registration cases: valid additions,
   each rule violation, and custom-transition pipeline coverage.

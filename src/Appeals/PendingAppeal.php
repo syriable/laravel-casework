@@ -13,7 +13,7 @@ use Syriable\Casework\Support\ActorRef;
 /**
  * Pending-operation builder for appeals (ADR-0009; Phase 5 §6): inert
  * and immutable until submit(). The target is a decision or a
- * restriction (FR-501); the statement is optional and opaque.
+ * restriction; the statement is optional and opaque.
  */
 final class PendingAppeal
 {

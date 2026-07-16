@@ -22,7 +22,7 @@ use Syriable\Casework\Support\Origin;
 /**
  * A typed, scoped limitation on a subject (domain model E7).
  *
- * The real-time rule (I-09): a stored state of `active` with expires_at
+ * The real-time rule: a stored state of `active` with expires_at
  * in the past evaluates as inactive everywhere — the scheduled expiry
  * command only formalizes events and audit, never correctness.
  *
@@ -92,7 +92,7 @@ class Restriction extends Model implements Stateful
         return $this->belongsTo(ModelRegistry::classFor('restriction'), 'superseded_by_id');
     }
 
-    /** Currently enforceable: state active AND not past expiry (I-09). */
+    /** Currently enforceable: state active AND not past expiry. */
     public function isActive(): bool
     {
         return $this->getAttribute('state') === RestrictionState::Active->value
@@ -105,7 +105,7 @@ class Restriction extends Model implements Stateful
     }
 
     /**
-     * The FR-405 hot path — state active AND not past expiry (I-09),
+     * The FR-405 hot path — state active AND not past expiry,
      * resolved inside the composite hot-path index.
      *
      * @param  Builder<static>  $query
@@ -135,7 +135,7 @@ class Restriction extends Model implements Stateful
     }
 
     /**
-     * Due for the expiry command (FR-404).
+     * Due for the expiry command.
      *
      * @param  Builder<static>  $query
      */

@@ -19,7 +19,8 @@ try {
 
 | Operation | Throws |
 |---|---|
-| `report(...)->file()` | `DuplicateReport`, `UnknownReason`, `AuthorizationException` |
+| `report(...)->file()` | `DuplicateReport`, `UnknownReason`, `ReporterBlocked`, `ReportRateLimited`, `AuthorizationException` |
+| `adjustReputation()` | `AuthorizationException` |
 | `openCase` / `attachReport` / `assignCase` / … | `InvalidTransition`, `AuthorizationException` |
 | `decide(...)->finalize()` | `InvalidTransition`, `InvalidConfiguration` (unknown outcome), `AuthorizationException` |
 | `restrict/suspend(...)->apply()`, `warn(...)->issue()` | `InvalidConfiguration` (unknown type), `AuthorizationException` |
@@ -36,16 +37,18 @@ try {
 
 | Exception | Raised when |
 |---|---|
-| `DuplicateReport` | same reporter, subject, and reason while a report is open (I-02) |
-| `UnknownReason` | reason key missing or inactive (FR-151) |
-| `InvalidTransition` | transition not allowed from the record's state (I-03); carries `$record`, `$transition`, `$fromState` |
+| `DuplicateReport` | same reporter, subject, and reason while a report is open |
+| `UnknownReason` | reason key missing or inactive |
+| `InvalidTransition` | transition not allowed from the record's state; carries `$record`, `$transition`, `$fromState` |
 | `IncompleteBuilder` | a pending-operation builder's terminal verb called before required aspects (ADR-0009) |
-| `AppealWindowClosed` | submission after `appeals.window_days` elapsed (FR-506) |
-| `AppealLimitReached` | target already carries `appeals.limit_per_target` appeals (FR-503) |
-| `ReviewerNotIndependent` | reviewer is the original decider/issuer while independence is required (I-12) |
+| `AppealWindowClosed` | submission after `appeals.window_days` elapsed |
+| `AppealLimitReached` | target already carries `appeals.limit_per_target` appeals |
+| `ReviewerNotIndependent` | reviewer is the original decider/issuer while independence is required |
 | `ImmutableRecord` | update/delete attempted on decisions or audit entries (ADR-0003) |
 | `InvalidConfiguration` | boot validation failure, unknown outcome/restriction type at runtime; carries `$key` |
-| `InvalidWorkflow` | workflow extension violating the add-only rules (ADR-0013) |
+| `InvalidWorkflow` | workflow extension violating the add-only rules (ADR-0019) |
+| `ReporterBlocked` | reporter's reputation score at/below `reporting.reputation.block_threshold` |
+| `ReportRateLimited` | reporter exceeded `reporting.reputation.rate_limit` within the window |
 
 Guard-level refusals never leave partial records: an exception from
 `file()` or `submit()` means nothing was persisted.

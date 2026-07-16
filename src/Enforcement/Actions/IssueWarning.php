@@ -16,7 +16,7 @@ use Syriable\Casework\Support\Concerns\AuthorizesActions;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * Issue a formal warning (FR-406). Not a state machine — activity is
+ * Issue a formal warning. Not a state machine — activity is
  * time-derived (workflow doc).
  */
 class IssueWarning

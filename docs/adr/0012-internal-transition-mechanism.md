@@ -1,15 +1,14 @@
 # ADR-0012 — Internal Transition Mechanism
 
-**Status:** Proposed (Gate G7)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 7 — Workflows & State Machines
 
 ## Context
 
 ADR-0007 committed to no third-party state machine package. Four lifecycles need guarded
 transitions where every transition is the single state write-path, attributes an actor,
-writes audit, and dispatches an event (I-03/I-04), and applications can extend workflows
-within limits (FR-903, ADR-0013). Actions (ADR-0005) are the callers.
+writes audit, and dispatches an event, and applications can extend workflows within
+limits (ADR-0019). Actions (ADR-0005) are the callers.
 
 ## Problem
 
@@ -29,16 +28,16 @@ methods, or a declarative definition?
 ## Decision
 
 **Alternative 1: declarative definitions + one tiny engine.** Per lifecycle, a
-`WorkflowDefinition` (container-resolved, hence replaceable/extendable — the FR-903
-entry point) declares the transition table exactly as written in the Phase 7 docs. The
+`WorkflowDefinition` (container-resolved, hence replaceable/extendable)
+declares the transition table for each lifecycle. The
 engine's single `transition()` operation, called only by actions inside their
 transaction, performs: verify from-state → run guards → write state → return; the
 calling action then records audit and dispatches the event *in the same transaction
 scope* per the fixed action pipeline (ADR-0005 order).
 
-States themselves are string-backed enums (core states) unioned with plain strings
-(custom states, ADR-0013); the `state` column is `string(32)` (Phase 6) — no class-per-
-state, no table changes for extensions.
+States themselves are string-backed enums; the `state` column is
+`string(32)` regardless, so no table changes are needed to add a
+transition (ADR-0019).
 
 Alternatives 2–3 are rejected: class-per-state multiplies public surface and makes
 app-added states require app-defined classes wired into package internals; enum methods
@@ -47,7 +46,7 @@ scatter the transition table across match-arms and cannot host app extensions at
 ## Consequences
 
 - **+** The docs' transition tables and the code's definitions are the same shape —
-  reviewable 1:1; exhaustive transition tests (NFR-07) iterate the definitions.
+  reviewable 1:1; exhaustive transition tests iterate the definitions.
 - **+** One engine (~small, internal) serves all four lifecycles; internal status means
   its internals can evolve without BC breaks (only definitions and thrown exceptions are
   public-adjacent).

@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Syriable\Casework\Appeals\Models\Appeal;
 
 /**
- * Safe-by-default appeal authorization (FR-601): denied for model
+ * Safe-by-default appeal authorization: denied for model
  * actors until the application registers its own policy. System
- * attribution bypasses policies (FR-805). Applications typically grant
+ * attribution bypasses policies. Applications typically grant
  * `submit` to the affected actor and the review abilities to
  * moderation staff.
  */

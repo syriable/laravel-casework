@@ -8,8 +8,8 @@ use Syriable\Casework\States\TransitionDefinition;
 use Syriable\Casework\States\WorkflowDefinition;
 
 /**
- * The restriction lifecycle, verbatim from docs/workflows/restriction.md.
- * The real-time expiry rule (I-09) lives in the model's activity checks;
+ * The restriction lifecycle, verbatim from docs/guide/workflows.md.
+ * The real-time expiry rule lives in the model's activity checks;
  * the `expire` transition is bookkeeping.
  */
 class RestrictionWorkflow extends WorkflowDefinition

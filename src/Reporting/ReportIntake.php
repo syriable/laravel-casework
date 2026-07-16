@@ -33,7 +33,7 @@ final class ReportIntake
     ) {}
 
     /**
-     * Open/join a case regardless of the configured strategy (FR-205).
+     * Open/join a case regardless of the configured strategy.
      */
     public function forceCase(): void
     {

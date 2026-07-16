@@ -1,14 +1,13 @@
 # ADR-0002 — Reporter & Actor Identity Strategy
 
-**Status:** Proposed (Gate G3)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 3 — Domain Modeling
 
 ## Context
 
-Reports come from authenticated models, the System, or anonymous sources (FR-103). Every
+Reports come from authenticated models, the System, or anonymous sources. Every
 other domain action (transitions, decisions, lifts, appeals) must be attributed to an
-actor, where automation acts as the System (FR-805, FR-701). The package must not own or
+actor, where automation acts as the System. The package must not own or
 assume a User model (non-goal W-04) and must not force applications to pollute their user
 tables with sentinel rows.
 
@@ -32,7 +31,7 @@ an arbitrary Eloquent model, the System, or (for reports only) nobody?
 reference plus an explicit origin:
 
 - Origin `model` ⇔ the polymorphic reference is present (invariant I-01).
-- Origin `system` ⇒ reference absent; the action came from automation/scheduling (FR-805).
+- Origin `system` ⇒ reference absent; the action came from automation/scheduling.
 - Origin `anonymous` ⇒ reference absent; **valid only for report reporters** — every
   other domain action requires `model` or `system`.
 
@@ -47,6 +46,6 @@ references (case assignee, appeal reviewer) are origin-`model` only.
   system-generated reports" are a simple origin filter.
 - **+** Anonymous reporting requires no identity fabrication and stores no PII.
 - **−** Two columns + discriminator instead of one FK; the origin/reference consistency
-  invariant must be enforced in code and covered by tests (I-01).
+  invariant must be enforced in code and covered by tests.
 - **−** "Anonymous" is non-attributable by design — applications needing pseudonymous
   tracking must use origin `model` with their own throwaway identity model.

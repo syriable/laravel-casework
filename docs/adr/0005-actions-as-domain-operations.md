@@ -1,15 +1,15 @@
 # ADR-0005 — Actions as Domain Operations
 
-**Status:** Proposed (Gate G4)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 4 — Architecture
 
 ## Context
 
-Invariants I-03/I-04 require every state change to pass through one guarded path that
-authorizes, validates, transacts, transitions, audits, and dispatches events. The package
-needs a home for these operations that is testable, container-resolvable, and overridable
-(FR-904), without turning models into god objects.
+Every state change must pass through one guarded path that authorizes,
+validates, transacts, transitions, audits, and dispatches events. The
+package needs a home for these operations that is testable,
+container-resolvable, and overridable, without turning models into
+god objects.
 
 ## Problem
 
@@ -30,18 +30,18 @@ or single-purpose action classes?
 (`{Module}\Actions\{Verb}{Noun}`). Each action follows the fixed internal order:
 **authorize → guard invariants → transaction → mutate/transition → audit → events.**
 Actions are bound in the container and therefore individually replaceable/decoratable by
-applications (FR-904); hooks (FR-804) are invoked inside the relevant actions.
+applications; hooks are invoked inside the relevant actions.
 
 Models stay thin (relations, scopes, casts, derived accessors). Convenience entry points
 (trait methods like `$post->report(...)`, the `Casework` facade) are thin delegators to
-actions — sugar defined in Phase 5, never a second implementation.
+actions — sugar over the same operation, never a second implementation.
 
 ## Consequences
 
-- **+** One operation = one class = one test file; exhaustive invariant testing (NFR-07)
+- **+** One operation = one class = one test file; exhaustive invariant testing
   stays tractable.
 - **+** Per-operation replaceability and decoration via the container — the extension
-  system (Phase 9) gets fine-grained interception for free.
+  system gets fine-grained interception for free.
 - **+** The authorize→…→events ordering is enforceable by convention and review, and
   documented once.
 - **−** More classes than a service approach — accepted: each is small, named after the

@@ -10,12 +10,13 @@ use Syriable\Casework\Reporting\Models\Reason;
 use Syriable\Casework\Support\ConfigurationValidator;
 use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Tests\Support\EscalatesTriageStage;
+use Syriable\Casework\Tests\Support\RecordingReputationPolicy;
 use Syriable\Casework\Tests\Support\TagsMetadataStage;
 
 /**
- * Boot validation of every config key (FR-951/952, ADR-0016).
+ * Boot validation of every config key (ADR-0016).
  *
- * @see docs/configuration.md
+ * @see docs/guide/configuration.md
  */
 function validConfig(): array
 {
@@ -56,6 +57,14 @@ it('rejects invalid values with the offending key', function (array $overrides, 
     'model not subclassing default' => [['models.reason' => Model::class], 'models.reason'],
     'non-bool duplicates' => [['reporting.allow_duplicates' => 'no'], 'reporting.allow_duplicates'],
     'non-bool anonymous' => [['reporting.allow_anonymous' => 1], 'reporting.allow_anonymous'],
+    'non-bool reputation enabled' => [['reporting.reputation.enabled' => 'yes'], 'reporting.reputation.enabled'],
+    'non-int dismissed delta' => [['reporting.reputation.dismissed_delta' => '1'], 'reporting.reputation.dismissed_delta'],
+    'non-int upheld delta' => [['reporting.reputation.upheld_delta' => 1.5], 'reporting.reputation.upheld_delta'],
+    'non-int block threshold' => [['reporting.reputation.block_threshold' => 'low'], 'reporting.reputation.block_threshold'],
+    'zero rate limit' => [['reporting.reputation.rate_limit' => 0], 'reporting.reputation.rate_limit'],
+    'zero rate limit window' => [['reporting.reputation.rate_limit_window_minutes' => 0], 'reporting.reputation.rate_limit_window_minutes'],
+    'missing reputation policy class' => [['reporting.reputation.policy' => 'App\\Missing\\Policy'], 'reporting.reputation.policy'],
+    'non-implementing reputation policy' => [['reporting.reputation.policy' => Model::class], 'reporting.reputation.policy'],
     'unknown strategy' => [['cases.strategy' => 'sometimes'], 'cases.strategy'],
     'missing strategy class' => [['cases.strategy' => 'App\\Missing\\Strategy'], 'cases.strategy'],
     'zero threshold' => [['cases.threshold' => 0], 'cases.threshold'],
@@ -144,5 +153,19 @@ it('accepts a null appeal window and custom open-set values', function (): void 
         'appeals.window_days' => null,
         'decisions.outcomes' => ['uphold_with_education'],
         'enforcement.restriction_types' => ['shadowban'],
+    ]);
+})->throwsNoExceptions();
+
+it('accepts reputation tracking enabled with null threshold and rate limit', function (): void {
+    validateConfigWith([
+        'reporting.reputation.enabled' => true,
+        'reporting.reputation.block_threshold' => -10,
+        'reporting.reputation.rate_limit' => 5,
+    ]);
+})->throwsNoExceptions();
+
+it('accepts a reputation policy implementing the contract', function (): void {
+    validateConfigWith([
+        'reporting.reputation.policy' => RecordingReputationPolicy::class,
     ]);
 })->throwsNoExceptions();

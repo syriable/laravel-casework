@@ -103,7 +103,7 @@ it('persists auto-dismissed reports as dismissed with System attribution', funct
     expect($report->refresh()->getAttribute('state'))->toBe('dismissed')
         ->and(CaseFile::query()->count())->toBe(0);
 
-    // Filed and dismissed both land in the audit trail (I-04).
+    // Filed and dismissed both land in the audit trail.
     $this->assertAuditRecorded('report.filed', $report);
     $dismissal = $this->assertAuditRecorded('report.dismissed', $report);
 

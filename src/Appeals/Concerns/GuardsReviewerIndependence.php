@@ -12,7 +12,7 @@ use Syriable\Casework\Support\ModelRegistry;
 
 /**
  * Reviewer eligibility for appeal review (assignment and startReview):
- * the appellant never reviews their own appeal (FR-604), and when
+ * the appellant never reviews their own appeal, and when
  * independence is required the reviewer must differ from the actor who
  * made the appealed decision or issued the appealed restriction
  * (FR-505, invariant I-12).

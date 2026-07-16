@@ -1,8 +1,7 @@
 # ADR-0015 — Event Dispatch Semantics
 
-**Status:** Proposed (Gate G8)
+**Status:** Accepted
 **Date:** 2026-07-14
-**Phase:** 8 — Events
 
 ## Context
 
@@ -51,8 +50,8 @@ over-engineering).
 - **+** Ghost-notification class of bugs is impossible by construction; notifier and
   automation hooks inherit the guarantee.
 - **+** Within-transaction consumers that genuinely need pre-commit interception have a
-  designed alternative: intake/triage pipeline stages (FR-804), not events.
+  designed alternative: intake/triage pipeline stages, not events.
 - **−** Events cannot abort the operation (they fire post-commit) — intentional; vetoing
   belongs to guards and pipeline stages, and the docs must say so.
 - **−** In-memory test assertions must account for after-commit timing — Testbench runs
-  transactions to completion, `Event::fake()` works unchanged (Phase 11 notes this).
+  transactions to completion, so `Event::fake()` works unchanged.

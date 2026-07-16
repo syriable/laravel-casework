@@ -13,7 +13,7 @@ use Syriable\Casework\Support\ModelRegistry;
 
 /**
  * config: 'always' — every report joins the subject's open case,
- * opening one when none exists (FR-205/206).
+ * opening one when none exists.
  */
 class AlwaysStrategy implements CaseStrategy
 {

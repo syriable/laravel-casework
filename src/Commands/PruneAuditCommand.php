@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * Opt-in audit pruning (FR-705) — the single documented exception to
+ * Opt-in audit pruning — the single documented exception to
  * audit immutability (ADR-0003), operating via bulk delete so no model
  * API is involved. Refuses to run unless retention was chosen: either
  * --before or config('casework.audit.prune_after_days').
@@ -36,7 +36,7 @@ final class PruneAuditCommand extends Command
         $class = ModelRegistry::classFor('audit_entry');
 
         // Bulk query delete: bypasses Eloquent model events deliberately —
-        // PreventsMutation guards the model API, not retention (FR-705).
+        // PreventsMutation guards the model API, not retention.
         $deleted = $class::query()->where('created_at', '<', $cutoff)->delete();
         $pruned = is_int($deleted) ? $deleted : 0;
 

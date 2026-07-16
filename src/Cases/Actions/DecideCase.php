@@ -24,7 +24,7 @@ use Syriable\Casework\Support\ModelRegistry;
 use Syriable\Casework\Support\Outcome;
 
 /**
- * Decide a case (FR-301–305). Atomic (I-06, I-08): the case transition,
+ * Decide a case. Atomic: the case transition,
  * open-report resolution, and enforcement application commit together
  * or not at all. Enforcement events dispatch before the summarizing
  * CaseDecided (occurrence order, ADR-0015).
@@ -104,7 +104,7 @@ class DecideCase
                 }
             }
 
-            // Resolve the case's open reports with this decision (I-06).
+            // Resolve the case's open reports with this decision.
             $case->reports()
                 ->whereNotIn('state', ['resolved', 'dismissed'])
                 ->get()

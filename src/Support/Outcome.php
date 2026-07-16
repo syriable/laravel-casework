@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Syriable\Casework\Support;
 
 /**
- * Shipped decision outcomes (FR-302). An open set: applications extend it
+ * Shipped decision outcomes. An open set: applications extend it
  * via config('casework.decisions.outcomes') — string-backed by design, not
  * by subclassing (ADR-0017).
  */

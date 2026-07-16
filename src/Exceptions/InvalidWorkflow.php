@@ -7,7 +7,7 @@ namespace Syriable\Casework\Exceptions;
 use LogicException;
 
 /**
- * Thrown at boot when a workflow definition violates the ADR-0013
+ * Thrown at boot when a workflow definition violates the ADR-0019
  * extension rules — never at runtime.
  */
 final class InvalidWorkflow extends LogicException implements CaseworkException

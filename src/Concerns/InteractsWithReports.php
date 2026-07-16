@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Syriable\Casework\Support\ModelRegistry;
 
 /**
- * The Reportable relation surface (Phase 5 §1). Apply to models
+ * The Reportable relation surface. Apply to models
  * implementing Contracts\Reportable.
  */
 trait InteractsWithReports
 {
     /**
-     * All reports about this model (FR-106).
+     * All reports about this model.
      *
      * @return MorphMany<Model, $this>
      */

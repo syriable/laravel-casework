@@ -15,7 +15,7 @@ use Syriable\Casework\Support\ActorRef;
 use Syriable\Casework\Support\Concerns\AuthorizesActions;
 
 /**
- * Assign or reassign a case to a moderator (FR-203). A recorded,
+ * Assign or reassign a case to a moderator. A recorded,
  * evented operation that is not a state transition (workflow doc).
  */
 class AssignCase
