@@ -37,7 +37,7 @@ class AdjustReporterReputation
 
         return DB::transaction(function () use ($reporter, $delta, $reason, $by, $report): ReporterReputation {
             $reputation = $this->resolveReputation($reporter);
-            $before = $reputation->getAttribute('score');
+            $before = $reputation->score;
             $wasBlocked = $reputation->isBlocked();
 
             // Atomic UPDATE ... SET score = score + ? — race-safe under
@@ -48,7 +48,7 @@ class AdjustReporterReputation
             }
 
             $reputation->refresh();
-            $after = $reputation->getAttribute('score');
+            $after = $reputation->score;
 
             $this->recorder->record($by, 'reporter.reputation_adjusted', $reputation, [
                 'reporter_type' => $reporter->getMorphClass(),

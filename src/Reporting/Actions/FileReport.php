@@ -304,7 +304,7 @@ class FileReport
                 ->first();
 
             if ($reputation !== null && $reputation->isBlocked()) {
-                throw ReporterBlocked::for($by->actor, $reputation->getAttribute('score'));
+                throw ReporterBlocked::for($by->actor, $reputation->score);
             }
         }
 

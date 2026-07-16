@@ -16,6 +16,8 @@ use Syriable\Casework\Support\Concerns\HasPrefixedTable;
  * reporter filed are dismissed or upheld. Only model-origin reporters
  * have a row — system and anonymous origins carry no reporter identity
  * to score.
+ *
+ * @property int $score
  */
 class ReporterReputation extends Model
 {
@@ -54,6 +56,6 @@ class ReporterReputation extends Model
     {
         $threshold = config('casework.reporting.reputation.block_threshold');
 
-        return is_int($threshold) && $this->getAttribute('score') <= $threshold;
+        return is_int($threshold) && $this->score <= $threshold;
     }
 }
