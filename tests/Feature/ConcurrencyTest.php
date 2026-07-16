@@ -53,15 +53,19 @@ it('lets the database reject a second open report for the same tuple', function 
     $key = $first->getAttribute('dedupe_key');
 
     // A writer that raced past the pre-check would try to insert the same
-    // fingerprint; the unique index rejects it at the database layer.
-    expect(fn () => Report::factory()->create([
+    // fingerprint; the unique index rejects it at the database layer. The
+    // insert is wrapped in a transaction so the violation is savepoint-
+    // scoped — mirroring the real racing request (FileReport transacts)
+    // and keeping PostgreSQL's aborted-transaction rule out of the test's
+    // outer wrapper.
+    expect(fn () => DB::transaction(fn () => Report::factory()->create([
         'subject_type' => $post->getMorphClass(),
         'subject_id' => $post->getKey(),
         'reporter_type' => $user->getMorphClass(),
         'reporter_id' => $user->getKey(),
         'reason_id' => $reason->getKey(),
         'dedupe_key' => $key,
-    ]))->toThrow(QueryException::class);
+    ])))->toThrow(QueryException::class);
 });
 
 it('translates a raced unique violation into DuplicateReport', function (): void {

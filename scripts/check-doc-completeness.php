@@ -37,16 +37,18 @@ $exempt = [
     'HasPrefixedTable',             // internal concern
     'PreventsMutation',             // internal concern
     'GuardsStateColumn',            // internal concern
+    'ExpiresInRealTime',            // internal concern (expiry predicate)
     'AuthorizesActions',            // internal concern
     'GuardsReviewerIndependence',   // internal concern
     'PruneAuditCommand',            // documented by artisan signature (checked below)
     'ExpireRestrictionsCommand',    // documented by artisan signature (checked below)
+    'MakeReasonCommand',            // documented by artisan signature (checked below)
 ];
 
 $missing = [];
 
 // Commands are documented by their artisan signatures, not class names.
-foreach (['casework:prune-audit', 'casework:expire-restrictions'] as $signature) {
+foreach (['casework:prune-audit', 'casework:expire-restrictions', 'casework:make-reason'] as $signature) {
     if (! str_contains($haystack, $signature)) {
         $missing[] = $signature;
     }
