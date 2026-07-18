@@ -17,12 +17,12 @@ php artisan vendor:publish --tag="casework-config"
 | `table_prefix` | `casework_` | Prefix for all eleven tables; set before migrating |
 | `models.*` | shipped classes | Model overrides (X1); values must subclass the shipped model |
 | `reporting.allow_duplicates` | `false` | Permit the same reporter to re-report the same subject for the same reason while a report is open |
-| `reporting.allow_anonymous` | `true` | Permit `ActorRef::anonymous()` reports |
+| `reporting.allow_anonymous` | `false` | Permit `ActorRef::anonymous()` reports (opt in consciously) |
 | `reporting.reputation.enabled` | `false` | Track a score per reporter, adjusted on report dismissal/resolution (X14) |
 | `reporting.reputation.dismissed_delta` | `-1` | Score change when one of the reporter's reports is dismissed |
 | `reporting.reputation.upheld_delta` | `1` | Score change when a report is upheld/escalated |
 | `reporting.reputation.block_threshold` | `null` | Score at/below which reporting is blocked; `null` = tracking only |
-| `reporting.reputation.rate_limit` | `null` | Reports permitted per reporter within the window; `null` = no limit |
+| `reporting.reputation.rate_limit` | `30` | Reports permitted per reporter within the window; `null` = no limit |
 | `reporting.reputation.rate_limit_window_minutes` | `60` | Window size for `rate_limit` |
 | `reporting.reputation.policy` | `DefaultReputationPolicy` | The scoring rule; must implement `Contracts\ReputationPolicy` (X14) |
 | `cases.strategy` | `threshold` | When reports open/join cases: `always`, `threshold`, `manual` (shipped as `AlwaysStrategy`, `ThresholdStrategy`, `ManualStrategy`), or a `CaseStrategy` class (X7) |
@@ -30,7 +30,7 @@ php artisan vendor:publish --tag="casework-config"
 | `cases.priorities` | `low, normal, high, urgent` | Ordered priority vocabulary |
 | `cases.default_priority` | `normal` | Priority for new cases; must be in `priorities` |
 | `decisions.outcomes` | `[]` | Extra outcome keys beyond `dismiss`/`uphold`/`escalate` (X3) |
-| `enforcement.restriction_types` | `[]` | Extra restriction types beyond `suspension` (X4) |
+| `enforcement.restriction_types` | `['messaging']` | Extra restriction types beyond `suspension` (open set; Converse uses `messaging`) |
 | `appeals.limit_per_target` | `1` | Appeals permitted per decision/restriction |
 | `appeals.window_days` | `30` | Days after the decision/restriction during which an appeal may be submitted; `null` = no window |
 | `appeals.require_independent_reviewer` | `true` | Reviewer must differ from the original decider/issuer |

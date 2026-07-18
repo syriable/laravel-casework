@@ -51,14 +51,16 @@ return [
         'allow_duplicates' => false,
 
         /*
-         * Permit reports with origin "anonymous".
+         * Permit reports with origin "anonymous". Disabled by default —
+         * enable consciously when your product needs anonymous intake
+         * (and pair it with rate limiting below).
          */
-        'allow_anonymous' => true,
+        'allow_anonymous' => false,
 
         /*
          * Reporter reputation and rate limiting (extension point X14).
-         * Off by default — enabling it does not by itself block or
-         * limit anyone; see block_threshold and rate_limit below.
+         * Rate limiting ships on by default to blunt report bombing;
+         * score tracking stays opt-in via `enabled` / `block_threshold`.
          */
         'reputation' => [
             /*
@@ -89,7 +91,7 @@ return [
              * Reports permitted per reporter within
              * rate_limit_window_minutes; null = no rate limiting.
              */
-            'rate_limit' => null,
+            'rate_limit' => 30,
             'rate_limit_window_minutes' => 60,
 
             /*
@@ -129,9 +131,11 @@ return [
 
     'enforcement' => [
         /*
-         * Additional restriction types beyond 'suspension'.
+         * Additional restriction types beyond the shipped set
+         * (`suspension`). `messaging` is the conventional type for
+         * communication gating (see RestrictionType::MESSAGING).
          */
-        'restriction_types' => [],
+        'restriction_types' => ['messaging'],
     ],
 
     'appeals' => [

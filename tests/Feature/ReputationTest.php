@@ -88,6 +88,7 @@ it('increases reputation when a case decision upholds or escalates the report', 
 });
 
 it('does not adjust reputation for system or anonymous reporters', function (): void {
+    config()->set('casework.reporting.allow_anonymous', true);
     config()->set('casework.reporting.reputation.enabled', true);
 
     $post = Post::factory()->create();
@@ -172,7 +173,9 @@ it('rate-limits repeated reports within the configured window', function (): voi
     expect(Report::query()->count())->toBe(2);
 });
 
-it('does not rate-limit when rate_limit is null (the default)', function (): void {
+it('does not rate-limit when rate_limit is null', function (): void {
+    config()->set('casework.reporting.reputation.rate_limit', null);
+
     $post = Post::factory()->create();
     $user = Post::factory()->create();
 
@@ -181,6 +184,11 @@ it('does not rate-limit when rate_limit is null (the default)', function (): voi
     }
 
     expect(Report::query()->count())->toBe(5);
+});
+
+it('ships a non-null rate_limit by default', function (): void {
+    expect(config('casework.reporting.reputation.rate_limit'))->toBe(30)
+        ->and(config('casework.reporting.allow_anonymous'))->toBeFalse();
 });
 
 it('excludes reports outside the rate-limit window', function (): void {

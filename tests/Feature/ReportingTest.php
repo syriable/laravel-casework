@@ -56,7 +56,9 @@ it('files a report through the Phase 5 builder chain', function (): void {
     Event::assertDispatched(ReportFiled::class, fn (ReportFiled $event) => $event->report->is($report));
 });
 
-it('files anonymous and system reports', function (): void {
+it('files anonymous and system reports when anonymous reporting is enabled', function (): void {
+    config()->set('casework.reporting.allow_anonymous', true);
+
     $post = Post::factory()->create();
     $reason = Reason::factory()->create();
 
@@ -68,9 +70,7 @@ it('files anonymous and system reports', function (): void {
         ->and($system->refresh()->origin)->toBe(Origin::System);
 });
 
-it('blocks anonymous reports when disabled', function (): void {
-    config()->set('casework.reporting.allow_anonymous', false);
-
+it('blocks anonymous reports by default', function (): void {
     Casework::report(Post::factory()->create())
         ->anonymously()
         ->because(Reason::factory()->create())
@@ -238,6 +238,8 @@ it('dispatches nothing when the surrounding transaction rolls back', function ()
 });
 
 it('exposes the Reportable trait surface', function (): void {
+    config()->set('casework.reporting.allow_anonymous', true);
+
     $post = Post::factory()->create();
     $reason = Reason::factory()->create();
 

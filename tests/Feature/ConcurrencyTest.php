@@ -21,6 +21,8 @@ use Workbench\App\Models\Post;
  * what actually holds when two writers slip past a pre-check at once.
  */
 it('assigns a dedupe key only to attributable, dedupe-guarded reports', function (): void {
+    config()->set('casework.reporting.allow_anonymous', true);
+
     $post = Post::factory()->create();
     $user = Post::factory()->create();
     $reason = Reason::factory()->create();

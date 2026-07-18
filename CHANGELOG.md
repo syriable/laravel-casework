@@ -33,6 +33,12 @@ overrides `customStates()`.
 
 ### Changed
 
+- **Safer reporting defaults.** `reporting.allow_anonymous` defaults to
+  `false`; `reporting.reputation.rate_limit` defaults to `30` reports per
+  hour (set to `null` to disable). Opt into anonymous intake consciously.
+- **`RestrictionType::MESSAGING`** constant and default
+  `enforcement.restriction_types => ['messaging']` for communication-
+  gating packages such as `syriable/laravel-converse`.
 - **Race-safe invariants.** The duplicate-report guard is now backed by
   a nullable `dedupe_key` unique index, and the appeal-limit guard by a
   row lock on the appealed target — both invariants now hold under

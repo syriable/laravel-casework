@@ -65,6 +65,7 @@ it('joins the existing open case under the threshold strategy', function (): voi
     // Shipped default: threshold = 3.
     $post = Post::factory()->create();
     $reason = Reason::factory()->create();
+    config()->set('casework.reporting.allow_anonymous', true);
     config()->set('casework.reporting.allow_duplicates', true);
 
     $first = Casework::report($post)->anonymously()->because($reason)->file();
@@ -91,6 +92,7 @@ it('joins the existing open case under the threshold strategy', function (): voi
 });
 
 it('opens a case per report under the always strategy and none under manual', function (): void {
+    config()->set('casework.reporting.allow_anonymous', true);
     config()->set('casework.cases.strategy', 'always');
 
     $post = Post::factory()->create();
