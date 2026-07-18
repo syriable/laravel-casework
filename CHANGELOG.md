@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-casework` will be documented in this file.
 
+## 1.0.1 - 2026-07-18
+
+**Full Changelog**: https://github.com/syriable/laravel-casework/compare/1.0.0...1.0.1
+
 ## Unreleased
 
 This release carries one breaking change (workflow extension is now
